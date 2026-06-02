@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   UtensilsCrossed,
-  Image,
+  Image as ImageIcon,
   Settings,
   Truck,
   Users,
@@ -32,7 +32,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Menu', href: '/admin/menu', icon: UtensilsCrossed, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
-  { label: 'Gallery', href: '/admin/gallery', icon: Image, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
+  { label: 'Gallery', href: '/admin/gallery', icon: ImageIcon, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Approvals', href: '/admin/approvals', icon: ClipboardCheck, roles: ['DEVELOPER', 'ADMIN'] },
   { label: 'Delivery', href: '/admin/delivery', icon: Truck, roles: ['DEVELOPER', 'ADMIN'] },
   { label: 'Settings', href: '/admin/settings', icon: Settings, roles: ['DEVELOPER', 'ADMIN'] },
