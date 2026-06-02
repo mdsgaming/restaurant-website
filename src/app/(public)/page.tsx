@@ -2,13 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { Suspense } from 'react'
 import { Metadata } from 'next'
-import {
-  getRestaurantSettingsServer,
-  getMenuCategoriesServer,
-  getMenuItemsServer,
-  getGalleryItemsServer,
-  getDeliveryPlatformsServer,
-} from '@/lib/firestoreServer'
+import { fetchAllPublicData, getRestaurantSettingsServer } from '@/lib/firestoreServer'
 import { HeroSection } from '@/components/public/HeroSection'
 import { AboutSection } from '@/components/public/AboutSection'
 import { MenuSection } from '@/components/public/MenuSection'
@@ -35,19 +29,18 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function HomePageContent() {
   let settings = null
-  let categories: Awaited<ReturnType<typeof getMenuCategoriesServer>> = []
-  let items: Awaited<ReturnType<typeof getMenuItemsServer>> = []
-  let gallery: Awaited<ReturnType<typeof getGalleryItemsServer>> = []
-  let platforms: Awaited<ReturnType<typeof getDeliveryPlatformsServer>> = []
+  let categories: Awaited<ReturnType<typeof fetchAllPublicData>>['categories'] = []
+  let items: Awaited<ReturnType<typeof fetchAllPublicData>>['items'] = []
+  let gallery: Awaited<ReturnType<typeof fetchAllPublicData>>['gallery'] = []
+  let platforms: Awaited<ReturnType<typeof fetchAllPublicData>>['platforms'] = []
 
   try {
-    ;[settings, categories, items, gallery, platforms] = await Promise.all([
-      getRestaurantSettingsServer(),
-      getMenuCategoriesServer(),
-      getMenuItemsServer(),
-      getGalleryItemsServer(true),
-      getDeliveryPlatformsServer(),
-    ])
+    const data = await fetchAllPublicData()
+    settings = data.settings
+    categories = data.categories
+    items = data.items
+    gallery = data.gallery
+    platforms = data.platforms
   } catch {
     // Render with defaults on error
   }
@@ -56,7 +49,6 @@ async function HomePageContent() {
 
   return (
     <>
-      {/* Announcement banner */}
       {mergedSettings.announcementActive && mergedSettings.announcement && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-gold text-charcoal text-center py-2 text-sm font-medium">
           {mergedSettings.announcement}
