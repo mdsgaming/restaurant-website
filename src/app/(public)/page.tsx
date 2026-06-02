@@ -61,7 +61,7 @@ async function HomePageContent() {
       <GallerySection items={gallery} />
       <OrderSection platforms={platforms} />
       <HoursSection settings={mergedSettings} />
-      <ContactSection settings={mergedSettings} />
+      <ContactSection />
     </>
   )
 }

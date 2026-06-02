@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, X, UtensilsCrossed } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getRestaurantSettings } from '@/lib/firestore'
 
 const NAV_LINKS = [
   { label: 'Menu', href: '/menu' },
@@ -13,14 +14,25 @@ const NAV_LINKS = [
   { label: 'Contact', href: '/#contact' },
 ]
 
-export function Header({ restaurantName = 'Big Treats', logoUrl }: { restaurantName?: string; logoUrl?: string }) {
+export function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [restaurantName, setRestaurantName] = useState('Big Treats')
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 40) }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    getRestaurantSettings()
+      .then((s) => {
+        if (s?.name) setRestaurantName(s.name)
+        if (s?.logoUrl) setLogoUrl(s.logoUrl)
+      })
+      .catch(() => {})
   }, [])
 
   return (

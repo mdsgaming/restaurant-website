@@ -1,12 +1,25 @@
-import { MapPin, Phone, Mail, Instagram, Facebook, Twitter } from 'lucide-react'
-import type { RestaurantSettings } from '@/types'
+'use client'
 
-export function ContactSection({ settings }: { settings?: Partial<RestaurantSettings> }) {
+import { useEffect, useState } from 'react'
+import { MapPin, Phone, Mail, Instagram, Facebook, Twitter } from 'lucide-react'
+import { getRestaurantSettings } from '@/lib/firestore'
+import type { RestaurantSettings } from '@/types'
+import { DEFAULT_SETTINGS } from '@/lib/utils'
+
+export function ContactSection() {
+  const [settings, setSettings] = useState<Partial<RestaurantSettings>>(DEFAULT_SETTINGS)
+
+  useEffect(() => {
+    getRestaurantSettings()
+      .then((s) => { if (s) setSettings(s) })
+      .catch(() => {})
+  }, [])
+
   const mapUrl = settings?.mapEmbedUrl
-  const address = `${settings?.address || '123 Rue de la Paix'}, ${settings?.city || 'San Francisco'}, ${settings?.state || 'CA'} ${settings?.zip || ''}`
-  const phone = settings?.phone || '+1 (555) 123-4567'
-  const email = settings?.email || 'hello@restaurant.com'
-  const social = settings?.socialMedia
+  const address = `${settings.address || DEFAULT_SETTINGS.address}, ${settings.city || DEFAULT_SETTINGS.city}, ${settings.state || DEFAULT_SETTINGS.state} ${settings.zip || DEFAULT_SETTINGS.zip}`
+  const phone = settings.phone || DEFAULT_SETTINGS.phone
+  const email = settings.email || DEFAULT_SETTINGS.email
+  const social = settings.socialMedia
 
   return (
     <section id="contact" className="py-24">

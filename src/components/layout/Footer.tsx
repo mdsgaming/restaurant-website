@@ -1,20 +1,29 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { UtensilsCrossed, Facebook, Instagram, Twitter, MapPin, Phone, Mail } from 'lucide-react'
+import { getRestaurantSettings } from '@/lib/firestore'
 import type { RestaurantSettings } from '@/types'
+import { DEFAULT_SETTINGS } from '@/lib/utils'
 
-interface FooterProps {
-  settings?: Partial<RestaurantSettings>
-}
+export function Footer() {
+  const [settings, setSettings] = useState<Partial<RestaurantSettings>>(DEFAULT_SETTINGS)
 
-export function Footer({ settings }: FooterProps) {
-  const name = settings?.name || 'Big Treats'
-  const address = settings?.address || '123 Rue de la Paix'
-  const city = settings?.city || 'San Francisco'
-  const state = settings?.state || 'CA'
-  const phone = settings?.phone || '+1 (555) 123-4567'
-  const email = settings?.email || 'hello@restaurant.com'
-  const social = settings?.socialMedia
+  useEffect(() => {
+    getRestaurantSettings()
+      .then((s) => { if (s) setSettings(s) })
+      .catch(() => {})
+  }, [])
+
+  const name = settings.name || DEFAULT_SETTINGS.name
+  const address = settings.address || DEFAULT_SETTINGS.address
+  const city = settings.city || DEFAULT_SETTINGS.city
+  const state = settings.state || DEFAULT_SETTINGS.state
+  const phone = settings.phone || DEFAULT_SETTINGS.phone
+  const email = settings.email || DEFAULT_SETTINGS.email
+  const social = settings.socialMedia
 
   return (
     <footer className="bg-black text-cream/80">
@@ -23,7 +32,7 @@ export function Footer({ settings }: FooterProps) {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              {settings?.logoUrl ? (
+              {settings.logoUrl ? (
                 <Image src={settings.logoUrl} alt={name} width={32} height={32} className="rounded-sm object-contain" />
               ) : (
                 <div className="w-8 h-8 rounded-sm bg-gold flex items-center justify-center">
@@ -33,7 +42,7 @@ export function Footer({ settings }: FooterProps) {
               <span className="font-serif text-xl text-cream font-semibold">{name}</span>
             </div>
             <p className="text-sm text-cream/60 leading-relaxed">
-              {settings?.tagline || 'Where Every Meal Tells a Story'}
+              {settings.tagline || DEFAULT_SETTINGS.tagline}
             </p>
             <div className="flex items-center gap-3 pt-2">
               {social?.instagram && (
