@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isActive() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isActive == true;
+    }
+
+    function isDeveloper() {
+      return isAuthenticated() && isActive() && getUserRole() == 'DEVELOPER';
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && isActive() && (getUserRole() == 'ADMIN' || getUserRole() == 'DEVELOPER');
+    }
+
+    function isStaff() {
+      return isAuthenticated() && isActive() && getUserRole() in ['DEVELOPER', 'ADMIN', 'ASSISTANT'];
+    }
+
+    // Public read for restaurant content
+    match /settings/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /menuCategories/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /menuItems/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /gallery/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /deliveryPlatforms/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Staff-only: pending changes
+    match /pendingChanges/{id} {
+      allow read: if isStaff();
+      // Assistants can only create new pending changes, not approve/reject
+      allow create: if isStaff();
+      // Only admins/developers can update (approve/reject)
+      allow update: if isAdmin();
+      allow delete: if isDeveloper();
+    }
+
+    // Staff can read audit logs, only system writes
+    match /auditLogs/{id} {
+      allow read: if isAdmin();
+      allow create: if isStaff();
+    }
+
+    // User profiles
+    match /users/{uid} {
+      // Users can read their own profile, admins can read all
+      allow read: if request.auth.uid == uid || isAdmin();
+      // Only admins can create/update users (Developers can manage all)
+      allow create: if isAdmin();
+      allow update: if isAdmin() || request.auth.uid == uid;
+      allow delete: if isDeveloper();
+    }
+  }
+}

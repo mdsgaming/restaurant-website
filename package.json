@@ -1,0 +1,48 @@
+{
+  "name": "restaurant-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "pages:build": "npx @cloudflare/next-on-pages@1",
+    "preview": "npm run pages:build && wrangler pages dev",
+    "deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1058.0",
+    "@aws-sdk/s3-request-presigner": "^3.1058.0",
+    "@hookform/resolvers": "^3.9.0",
+    "@types/node": "^20.14.10",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "firebase": "^10.12.2",
+    "firebase-admin": "^12.2.0",
+    "lucide-react": "^0.400.0",
+    "next": "14.2.5",
+    "postcss": "^8.4.39",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-dropzone": "^14.2.3",
+    "react-hook-form": "^7.52.1",
+    "react-hot-toast": "^2.4.1",
+    "sharp": "^0.33.4",
+    "tailwind-merge": "^2.4.0",
+    "tailwindcss": "^3.4.6",
+    "typescript": "^5.5.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.12.1",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^2.4.3",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.5",
+    "wrangler": "^3.62.0"
+  }
+}
