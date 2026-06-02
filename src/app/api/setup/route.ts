@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminAuth, adminDb } from '@/lib/firebaseAdmin'
+import { getAdminAuth, getAdminDb } from '@/lib/firebaseAdmin'
 import { DEFAULT_SETTINGS } from '@/lib/utils'
 
 export async function POST(req: NextRequest) {
   try {
+    const adminAuth = getAdminAuth()
+    const adminDb = getAdminDb()
     const authHeader = req.headers.get('Authorization')
     const setupKey = process.env.SETUP_SECRET_KEY
 

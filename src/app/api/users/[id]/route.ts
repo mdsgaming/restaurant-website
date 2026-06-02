@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminAuth, adminDb } from '@/lib/firebaseAdmin'
+import { getAdminAuth, getAdminDb } from '@/lib/firebaseAdmin'
 
 export async function PATCH(
   req: NextRequest,
@@ -8,6 +8,8 @@ export async function PATCH(
   try {
     const { role, isActive, name } = await req.json()
     const uid = params.id
+    const adminAuth = getAdminAuth()
+    const adminDb = getAdminDb()
 
     const updates: Record<string, unknown> = {}
     const authUpdates: Record<string, unknown> = {}
@@ -60,8 +62,8 @@ export async function DELETE(
 ) {
   try {
     const uid = params.id
-    await adminAuth.deleteUser(uid)
-    await adminDb.collection('users').doc(uid).delete()
+    await getAdminAuth().deleteUser(uid)
+    await getAdminDb().collection('users').doc(uid).delete()
     return NextResponse.json({ success: true })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 })

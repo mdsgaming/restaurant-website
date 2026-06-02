@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminAuth, adminDb } from '@/lib/firebaseAdmin'
+import { getAdminAuth, getAdminDb } from '@/lib/firebaseAdmin'
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,6 +16,9 @@ export async function POST(req: NextRequest) {
     if (password.length < 8) {
       return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
     }
+
+    const adminAuth = getAdminAuth()
+    const adminDb = getAdminDb()
 
     const userRecord = await adminAuth.createUser({
       email,
@@ -44,7 +47,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    const snap = await adminDb.collection('users').get()
+    const snap = await getAdminDb().collection('users').get()
     const users = snap.docs.map((d) => ({ uid: d.id, ...d.data() }))
     return NextResponse.json(users)
   } catch (error) {

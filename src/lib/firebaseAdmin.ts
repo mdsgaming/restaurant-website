@@ -3,12 +3,12 @@ import { getFirestore, Firestore } from 'firebase-admin/firestore'
 import { getAuth, Auth } from 'firebase-admin/auth'
 import { getStorage, Storage } from 'firebase-admin/storage'
 
-let adminApp: App
-let adminDb: Firestore
-let adminAuth: Auth
-let adminStorage: Storage
+let _app: App | null = null
+let _db: Firestore | null = null
+let _auth: Auth | null = null
+let _storage: Storage | null = null
 
-function getAdminApp(): App {
+function initApp(): App {
   if (getApps().length > 0) return getApps()[0]
 
   const projectId = process.env.FIREBASE_PROJECT_ID
@@ -25,14 +25,22 @@ function getAdminApp(): App {
   })
 }
 
-try {
-  adminApp = getAdminApp()
-  adminDb = getFirestore(adminApp)
-  adminAuth = getAuth(adminApp)
-  adminStorage = getStorage(adminApp)
-} catch (e) {
-  console.error('Firebase Admin init error:', e)
-  throw e
+export function getAdminApp(): App {
+  if (!_app) _app = initApp()
+  return _app
 }
 
-export { adminApp, adminDb, adminAuth, adminStorage }
+export function getAdminDb(): Firestore {
+  if (!_db) _db = getFirestore(getAdminApp())
+  return _db
+}
+
+export function getAdminAuth(): Auth {
+  if (!_auth) _auth = getAuth(getAdminApp())
+  return _auth
+}
+
+export function getAdminStorage(): Storage {
+  if (!_storage) _storage = getStorage(getAdminApp())
+  return _storage
+}
