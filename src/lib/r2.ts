@@ -1,24 +1,35 @@
 import { S3Client } from '@aws-sdk/client-s3'
 
-if (
-  !process.env.CLOUDFLARE_R2_ACCOUNT_ID ||
-  !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ||
-  !process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
-) {
-  throw new Error('Missing Cloudflare R2 environment variables')
+let _r2Client: S3Client | null = null
+
+export function getR2Client(): S3Client {
+  if (!_r2Client) {
+    if (
+      !process.env.CLOUDFLARE_R2_ACCOUNT_ID ||
+      !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ||
+      !process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
+    ) {
+      throw new Error('Missing Cloudflare R2 environment variables')
+    }
+    _r2Client = new S3Client({
+      region: 'auto',
+      endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+      },
+    })
+  }
+  return _r2Client
 }
 
-export const r2Client = new S3Client({
-  region: 'auto',
-  endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
-  },
-})
+export function getR2Bucket(): string {
+  return process.env.CLOUDFLARE_R2_BUCKET_NAME ?? ''
+}
 
-export const R2_BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME!
-export const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL!
+export function getR2PublicUrl(): string {
+  return process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? ''
+}
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',

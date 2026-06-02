@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { r2Client, R2_BUCKET, R2_PUBLIC_URL, validateUpload } from '@/lib/r2'
+import { getR2Client, getR2Bucket, getR2PublicUrl, validateUpload } from '@/lib/r2'
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,15 +25,15 @@ export async function POST(req: NextRequest) {
     const key = `${folder}/${timestamp}_${randomSuffix}_${safeName}`
 
     const command = new PutObjectCommand({
-      Bucket: R2_BUCKET,
+      Bucket: getR2Bucket(),
       Key: key,
       ContentType: contentType,
       // ContentLength cannot be set on PutObject presigned URLs in R2 — omit it
     })
 
     // Presigned URL expires in 5 minutes
-    const presignedUrl = await getSignedUrl(r2Client, command, { expiresIn: 300 })
-    const publicUrl = `${R2_PUBLIC_URL}/${key}`
+    const presignedUrl = await getSignedUrl(getR2Client(), command, { expiresIn: 300 })
+    const publicUrl = `${getR2PublicUrl()}/${key}`
 
     return NextResponse.json({ presignedUrl, publicUrl, key })
   } catch (error) {
