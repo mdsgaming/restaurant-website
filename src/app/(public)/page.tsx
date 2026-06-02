@@ -3,12 +3,12 @@ export const dynamic = 'force-dynamic'
 import { Suspense } from 'react'
 import { Metadata } from 'next'
 import {
-  getRestaurantSettings,
-  getMenuCategories,
-  getMenuItems,
-  getGalleryItems,
-  getDeliveryPlatforms,
-} from '@/lib/firestore'
+  getRestaurantSettingsServer,
+  getMenuCategoriesServer,
+  getMenuItemsServer,
+  getGalleryItemsServer,
+  getDeliveryPlatformsServer,
+} from '@/lib/firestoreServer'
 import { HeroSection } from '@/components/public/HeroSection'
 import { AboutSection } from '@/components/public/AboutSection'
 import { MenuSection } from '@/components/public/MenuSection'
@@ -20,7 +20,7 @@ import { DEFAULT_SETTINGS } from '@/lib/utils'
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const settings = await getRestaurantSettings()
+    const settings = await getRestaurantSettingsServer()
     return {
       title: settings?.seoTitle || DEFAULT_SETTINGS.seoTitle,
       description: settings?.seoDescription || DEFAULT_SETTINGS.seoDescription,
@@ -42,11 +42,11 @@ async function HomePageContent() {
 
   try {
     ;[settings, categories, items, gallery, platforms] = await Promise.all([
-      getRestaurantSettings(),
-      getMenuCategories(),
-      getMenuItems(),
-      getGalleryItems(true),
-      getDeliveryPlatforms(),
+      getRestaurantSettingsServer(),
+      getMenuCategoriesServer(),
+      getMenuItemsServer(),
+      getGalleryItemsServer(true),
+      getDeliveryPlatformsServer(),
     ])
   } catch {
     // Render with defaults on error

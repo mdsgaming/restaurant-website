@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { Metadata } from 'next'
 import Image from 'next/image'
 import { Flame, Leaf, ShieldCheck } from 'lucide-react'
-import { getMenuCategories, getMenuItems, getRestaurantSettings } from '@/lib/firestore'
+import { getMenuCategoriesServer, getMenuItemsServer, getRestaurantSettingsServer } from '@/lib/firestoreServer'
 import { formatPrice } from '@/lib/utils'
 import type { MenuItem, MenuCategory } from '@/types'
 
@@ -18,8 +18,8 @@ export default async function MenuPage() {
   let restaurantName = 'Big Treats'
 
   try {
-    ;[categories, items] = await Promise.all([getMenuCategories(), getMenuItems()])
-    const settings = await getRestaurantSettings()
+    ;[categories, items] = await Promise.all([getMenuCategoriesServer(), getMenuItemsServer()])
+    const settings = await getRestaurantSettingsServer()
     if (settings?.name) restaurantName = settings.name
   } catch {
     // render with empty state
