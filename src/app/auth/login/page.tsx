@@ -1,14 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { UtensilsCrossed, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { getRestaurantSettings } from '@/lib/firestore'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
   const { signIn } = useAuth()
   const router = useRouter()
+
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    getRestaurantSettings().then((s) => { if (s?.logoUrl) setLogoUrl(s.logoUrl) }).catch(() => {})
+  }, [])
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -48,8 +56,14 @@ export default function LoginPage() {
         <div className="bg-white rounded-sm shadow-xl border border-charcoal/8 overflow-hidden">
           {/* Header */}
           <div className="bg-charcoal px-8 py-10 text-center">
-            <div className="w-12 h-12 bg-gold rounded-sm flex items-center justify-center mx-auto mb-4">
-              <UtensilsCrossed className="w-6 h-6 text-charcoal" />
+            <div className="w-12 h-12 rounded-sm flex items-center justify-center mx-auto mb-4 overflow-hidden">
+              {logoUrl ? (
+                <Image src={logoUrl} alt="Logo" width={48} height={48} className="object-contain" />
+              ) : (
+                <div className="w-full h-full bg-gold flex items-center justify-center">
+                  <UtensilsCrossed className="w-6 h-6 text-charcoal" />
+                </div>
+              )}
             </div>
             <h1 className="font-serif text-2xl text-cream">Staff Portal</h1>
             <p className="text-cream/50 text-sm mt-1">Big Treats African Restaurants</p>

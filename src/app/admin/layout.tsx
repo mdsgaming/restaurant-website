@@ -6,12 +6,13 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Sidebar } from '@/components/admin/Sidebar'
 import { AdminHeader } from '@/components/admin/AdminHeader'
 import { PageLoader } from '@/components/ui/LoadingSpinner'
-import { getPendingChanges } from '@/lib/firestore'
+import { getPendingChanges, getRestaurantSettings } from '@/lib/firestore'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { firebaseUser, appUser, loading } = useAuth()
   const router = useRouter()
   const [pendingCount, setPendingCount] = useState(0)
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     if (!loading) {
@@ -31,12 +32,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [appUser])
 
+  useEffect(() => {
+    getRestaurantSettings().then((s) => { if (s?.logoUrl) setLogoUrl(s.logoUrl) }).catch(() => {})
+  }, [])
+
   if (loading) return <PageLoader />
   if (!firebaseUser || !appUser) return <PageLoader />
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar pendingCount={pendingCount} />
+      <Sidebar pendingCount={pendingCount} logoUrl={logoUrl} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminHeader pendingCount={pendingCount} />
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">

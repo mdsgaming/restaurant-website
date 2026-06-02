@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
@@ -39,7 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Analytics', href: '/admin/analytics', icon: BarChart3, roles: ['DEVELOPER', 'ADMIN'] },
 ]
 
-export function Sidebar({ pendingCount = 0 }: { pendingCount?: number }) {
+export function Sidebar({ pendingCount = 0, logoUrl }: { pendingCount?: number; logoUrl?: string }) {
   const pathname = usePathname()
   const { appUser, role, signOut } = useAuth()
   const router = useRouter()
@@ -60,9 +61,13 @@ export function Sidebar({ pendingCount = 0 }: { pendingCount?: number }) {
       {/* Brand */}
       <div className="p-6 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gold rounded-sm flex items-center justify-center">
-            <UtensilsCrossed className="w-4 h-4 text-charcoal" />
-          </div>
+          {logoUrl ? (
+            <Image src={logoUrl} alt="Logo" width={32} height={32} className="rounded-sm object-contain" />
+          ) : (
+            <div className="w-8 h-8 bg-gold rounded-sm flex items-center justify-center">
+              <UtensilsCrossed className="w-4 h-4 text-charcoal" />
+            </div>
+          )}
           <div>
             <p className="font-serif text-cream text-sm font-semibold">Big Treats</p>
             <p className="text-cream/40 text-xs">Admin Portal</p>

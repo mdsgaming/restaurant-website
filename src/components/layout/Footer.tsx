@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { UtensilsCrossed, Facebook, Instagram, Twitter, MapPin, Phone, Mail } from 'lucide-react'
 import type { RestaurantSettings } from '@/types'
 
@@ -22,9 +23,13 @@ export function Footer({ settings }: FooterProps) {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-sm bg-gold flex items-center justify-center">
-                <UtensilsCrossed className="w-4 h-4 text-charcoal" />
-              </div>
+              {settings?.logoUrl ? (
+                <Image src={settings.logoUrl} alt={name} width={32} height={32} className="rounded-sm object-contain" />
+              ) : (
+                <div className="w-8 h-8 rounded-sm bg-gold flex items-center justify-center">
+                  <UtensilsCrossed className="w-4 h-4 text-charcoal" />
+                </div>
+              )}
               <span className="font-serif text-xl text-cream font-semibold">{name}</span>
             </div>
             <p className="text-sm text-cream/60 leading-relaxed">
