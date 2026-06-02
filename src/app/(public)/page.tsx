@@ -35,10 +35,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function HomePageContent() {
   let settings = null
-  let categories: Awaited<ReturnType<typeof getMenuCategories>> = []
-  let items: Awaited<ReturnType<typeof getMenuItems>> = []
-  let gallery: Awaited<ReturnType<typeof getGalleryItems>> = []
-  let platforms: Awaited<ReturnType<typeof getDeliveryPlatforms>> = []
+  let categories: Awaited<ReturnType<typeof getMenuCategoriesServer>> = []
+  let items: Awaited<ReturnType<typeof getMenuItemsServer>> = []
+  let gallery: Awaited<ReturnType<typeof getGalleryItemsServer>> = []
+  let platforms: Awaited<ReturnType<typeof getDeliveryPlatformsServer>> = []
 
   try {
     ;[settings, categories, items, gallery, platforms] = await Promise.all([
