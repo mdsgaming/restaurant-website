@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Menu, X, UtensilsCrossed } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -12,7 +13,7 @@ const NAV_LINKS = [
   { label: 'Contact', href: '/#contact' },
 ]
 
-export function Header({ restaurantName = 'Big Treats' }: { restaurantName?: string }) {
+export function Header({ restaurantName = 'Big Treats', logoUrl }: { restaurantName?: string; logoUrl?: string }) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -36,9 +37,13 @@ export function Header({ restaurantName = 'Big Treats' }: { restaurantName?: str
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-sm bg-gold flex items-center justify-center">
-                <UtensilsCrossed className="w-4 h-4 text-charcoal" />
-              </div>
+              {logoUrl ? (
+                <Image src={logoUrl} alt={restaurantName} width={32} height={32} className="rounded-sm object-contain" />
+              ) : (
+                <div className="w-8 h-8 rounded-sm bg-gold flex items-center justify-center">
+                  <UtensilsCrossed className="w-4 h-4 text-charcoal" />
+                </div>
+              )}
               <span className="font-serif text-xl text-cream font-semibold tracking-wide group-hover:text-gold transition-colors">
                 {restaurantName}
               </span>

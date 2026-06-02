@@ -12,7 +12,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <>
-      <Header restaurantName={settings?.name} />
+      <Header restaurantName={settings?.name} logoUrl={settings?.logoUrl} />
       <main>{children}</main>
       <Footer settings={settings ?? undefined} />
     </>
