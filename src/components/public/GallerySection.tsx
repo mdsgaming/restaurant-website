@@ -27,8 +27,14 @@ export function GallerySection({ items }: { items: GalleryItem[] }) {
 
         {/* Masonry grid */}
         {displayItems.length === 0 ? (
-          <div className="text-center py-16 text-charcoal/40">
-            <p className="font-serif text-xl italic">Gallery coming soon</p>
+          <div className="text-center py-16 space-y-6">
+            <p className="font-serif text-xl italic text-cream/30">Gallery coming soon</p>
+            <Link
+              href="/gallery"
+              className="inline-flex items-center gap-2 px-8 py-3.5 border border-cream/40 text-cream font-semibold text-sm rounded-sm hover:bg-primary hover:border-primary transition-all duration-200"
+            >
+              View Gallery <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         ) : (
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
