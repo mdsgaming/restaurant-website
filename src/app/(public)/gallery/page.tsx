@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Play, ZoomIn, X } from 'lucide-react'
+import { collection, query, orderBy, getDocs } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 import type { GalleryItem } from '@/types'
 import { SectionLoader } from '@/components/ui/LoadingSpinner'
 
@@ -16,9 +18,9 @@ export default function GalleryPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/public/data')
-        const data = await res.json()
-        setItems((data.gallery ?? []).filter((i: GalleryItem) => i.isActive))
+        const snap = await getDocs(query(collection(db, 'gallery'), orderBy('sortOrder')))
+        const all = snap.docs.map((d) => ({ id: d.id, ...d.data() } as GalleryItem))
+        setItems(all.filter((i) => i.isActive))
       } catch (e) {
         console.error(e)
       } finally {
