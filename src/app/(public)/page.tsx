@@ -55,12 +55,12 @@ async function HomePageContent() {
         </div>
       )}
 
-      <HeroSection settings={mergedSettings} />
-      <AboutSection settings={mergedSettings} />
+      <HeroSection />
+      <AboutSection />
       <MenuSection categories={categories} items={items} />
       <GallerySection items={gallery} />
       <OrderSection platforms={platforms} />
-      <HoursSection settings={mergedSettings} />
+      <HoursSection />
       <ContactSection />
     </>
   )

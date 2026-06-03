@@ -1,18 +1,29 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowDown, Star } from 'lucide-react'
+import { getRestaurantSettings } from '@/lib/firestore'
+import { DEFAULT_SETTINGS } from '@/lib/utils'
 import type { RestaurantSettings } from '@/types'
 
-interface HeroSectionProps {
-  settings: Partial<RestaurantSettings>
-}
+export function HeroSection() {
+  const [settings, setSettings] = useState<Partial<RestaurantSettings>>({
+    heroTitle: DEFAULT_SETTINGS.heroTitle,
+    heroSubtitle: DEFAULT_SETTINGS.heroSubtitle,
+  })
 
-export function HeroSection({ settings }: HeroSectionProps) {
-  const title = settings?.heroTitle || 'Big Treats'
-  const subtitle = settings?.heroSubtitle || 'Where Every Meal Tells a Story'
-  const heroImage = settings?.heroImageUrl
+  useEffect(() => {
+    getRestaurantSettings()
+      .then((s) => { if (s) setSettings(s) })
+      .catch(() => {})
+  }, [])
+
+  const title = settings.heroTitle || DEFAULT_SETTINGS.heroTitle
+  const subtitle = settings.heroSubtitle || DEFAULT_SETTINGS.heroSubtitle
+  const heroImage = settings.heroImageUrl
+  const featuredImage = settings.heroFeaturedImageUrl
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -33,9 +44,23 @@ export function HeroSection({ settings }: HeroSectionProps) {
       {/* Overlay — only shown when a hero image is set, for text readability */}
       {heroImage && <div className="absolute inset-0 bg-gradient-to-b from-charcoal/60 via-charcoal/40 to-charcoal/70" />}
 
-      {/* Decorative elements */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-gold/10 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-gold/5 pointer-events-none" />
+      {/* Featured circle image */}
+      {featuredImage && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full overflow-hidden pointer-events-none">
+          <Image
+            src={featuredImage}
+            alt={title}
+            fill
+            className="object-cover opacity-50"
+            sizes="520px"
+          />
+          <div className="absolute inset-0 bg-charcoal/20" />
+        </div>
+      )}
+
+      {/* Decorative rings */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-gold/20 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-gold/10 pointer-events-none" />
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">

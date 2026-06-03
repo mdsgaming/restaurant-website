@@ -120,6 +120,7 @@ export default function AdminSettingsPage() {
               <h3 className="font-semibold text-charcoal text-sm">Branding</h3>
               <ImageUpload label="Restaurant Logo" onUpload={url => set('logoUrl', url)} currentUrl={form.logoUrl} folder="branding" />
               <ImageUpload label="Hero Background Image" onUpload={url => set('heroImageUrl', url)} currentUrl={form.heroImageUrl} folder="branding" />
+              <ImageUpload label="Hero Circle Image" onUpload={url => set('heroFeaturedImageUrl', url)} currentUrl={form.heroFeaturedImageUrl} folder="branding" />
               <Field label="Hero Title" value={form.heroTitle || ''} onChange={v => set('heroTitle', v)} placeholder="Your Restaurant Name" />
               <Field label="Hero Subtitle" value={form.heroSubtitle || ''} onChange={v => set('heroSubtitle', v)} placeholder="Your tagline here" />
             </div>

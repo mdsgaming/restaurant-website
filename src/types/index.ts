@@ -52,6 +52,7 @@ export interface RestaurantSettings {
   mapEmbedUrl: string
   logoUrl: string
   heroImageUrl: string
+  heroFeaturedImageUrl: string
   heroTitle: string
   heroSubtitle: string
   aboutText: string

@@ -1,5 +1,9 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import { Clock } from 'lucide-react'
-import { formatHour, DAYS_OF_WEEK } from '@/lib/utils'
+import { formatHour, DAYS_OF_WEEK, DEFAULT_SETTINGS } from '@/lib/utils'
+import { getRestaurantSettings } from '@/lib/firestore'
 import type { RestaurantSettings } from '@/types'
 
 const DAY_LABELS: Record<string, string> = {
@@ -16,8 +20,18 @@ const today = new Date()
   .toLocaleDateString('en-US', { weekday: 'long' })
   .toLowerCase()
 
-export function HoursSection({ settings }: { settings?: Partial<RestaurantSettings> }) {
-  const hours = settings?.hours
+export function HoursSection() {
+  const [settings, setSettings] = useState<Partial<RestaurantSettings>>({
+    hours: DEFAULT_SETTINGS.hours,
+  })
+
+  useEffect(() => {
+    getRestaurantSettings()
+      .then((s) => { if (s) setSettings(s) })
+      .catch(() => {})
+  }, [])
+
+  const hours = settings.hours
 
   return (
     <section id="hours" className="py-24 text-cream">

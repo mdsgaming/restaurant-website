@@ -82,6 +82,7 @@ export const DEFAULT_SETTINGS = {
   mapEmbedUrl: '',
   logoUrl: '',
   heroImageUrl: '',
+  heroFeaturedImageUrl: '',
   heroTitle: 'Big Treats',
   heroSubtitle: 'Authentic African Flavours, Served with Love',
   aboutText:

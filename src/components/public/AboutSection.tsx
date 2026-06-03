@@ -1,5 +1,10 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Award, Leaf, Clock } from 'lucide-react'
+import { getRestaurantSettings } from '@/lib/firestore'
+import { DEFAULT_SETTINGS } from '@/lib/utils'
 import type { RestaurantSettings } from '@/types'
 
 const FEATURES = [
@@ -20,7 +25,19 @@ const FEATURES = [
   },
 ]
 
-export function AboutSection({ settings }: { settings?: Partial<RestaurantSettings> }) {
+export function AboutSection() {
+  const [settings, setSettings] = useState<Partial<RestaurantSettings>>({
+    aboutText: DEFAULT_SETTINGS.aboutText,
+    aboutChefName: DEFAULT_SETTINGS.aboutChefName,
+    aboutChefTitle: DEFAULT_SETTINGS.aboutChefTitle,
+  })
+
+  useEffect(() => {
+    getRestaurantSettings()
+      .then((s) => { if (s) setSettings(s) })
+      .catch(() => {})
+  }, [])
+
   return (
     <section id="about" className="py-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,7 +45,7 @@ export function AboutSection({ settings }: { settings?: Partial<RestaurantSettin
           {/* Image side */}
           <div className="relative">
             <div className="aspect-[4/5] rounded-sm overflow-hidden bg-white/5 relative border border-cream/10">
-              {settings?.aboutImageUrl ? (
+              {settings.aboutImageUrl ? (
                 <Image
                   src={settings.aboutImageUrl}
                   alt="About our restaurant"
@@ -45,10 +62,10 @@ export function AboutSection({ settings }: { settings?: Partial<RestaurantSettin
             {/* Floating chef card */}
             <div className="absolute -bottom-6 -right-6 bg-white/10 backdrop-blur-sm p-5 shadow-xl rounded-sm border-l-4 border-gold max-w-[200px] border border-cream/20">
               <p className="font-serif text-base text-cream font-semibold">
-                {settings?.aboutChefName || 'Chef Adaeze Okonkwo'}
+                {settings.aboutChefName || DEFAULT_SETTINGS.aboutChefName}
               </p>
               <p className="text-xs text-cream/60 mt-1">
-                {settings?.aboutChefTitle || 'Head Chef & Co-Founder'}
+                {settings.aboutChefTitle || DEFAULT_SETTINGS.aboutChefTitle}
               </p>
             </div>
             {/* Year badge */}
@@ -70,8 +87,7 @@ export function AboutSection({ settings }: { settings?: Partial<RestaurantSettin
             </div>
 
             <p className="text-cream/75 leading-relaxed text-lg">
-              {settings?.aboutText ||
-                'Founded with a passion for bringing the bold, rich, and comforting tastes of Africa to every table, Big Treats African Restaurants has been serving authentic flavours made from scratch using time-honoured family recipes.'}
+              {settings.aboutText || DEFAULT_SETTINGS.aboutText}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
