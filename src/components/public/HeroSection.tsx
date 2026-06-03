@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowDown, Star } from 'lucide-react'
+import { ArrowDown } from 'lucide-react'
 import { getRestaurantSettings } from '@/lib/firestore'
 import { DEFAULT_SETTINGS } from '@/lib/utils'
 import type { RestaurantSettings } from '@/types'
@@ -48,16 +48,6 @@ export function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-        <div className="flex items-center justify-center gap-2 mb-6 animate-fade-in">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Star key={i} className="w-4 h-4 fill-gold text-gold" />
-          ))}
-        </div>
-
-        <p className="section-label text-gold mb-4 animate-fade-in">
-          Fine Dining Experience
-        </p>
-
         <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-cream mb-6 leading-tight animate-fade-up">
           {title}
         </h1>
