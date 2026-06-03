@@ -39,16 +39,14 @@ export function GallerySection({ items }: { items: GalleryItem[] }) {
           </div>
         )}
 
-        {displayItems.length > 0 && (
-          <div className="text-center mt-12">
-            <Link
-              href="/gallery"
-              className="inline-flex items-center gap-2 px-8 py-3.5 border border-cream/40 text-cream font-semibold text-sm rounded-sm hover:bg-primary hover:border-primary transition-all duration-200"
-            >
-              View Full Gallery <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
+        <div className="text-center mt-12">
+          <Link
+            href="/gallery"
+            className="inline-flex items-center gap-2 px-8 py-3.5 border border-cream/40 text-cream font-semibold text-sm rounded-sm hover:bg-primary hover:border-primary transition-all duration-200"
+          >
+            View Full Gallery <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
 
       {/* Lightbox */}
