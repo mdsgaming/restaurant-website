@@ -22,39 +22,23 @@ export function HeroSection() {
 
   const title = settings.heroTitle || DEFAULT_SETTINGS.heroTitle
   const subtitle = settings.heroSubtitle || DEFAULT_SETTINGS.heroSubtitle
-  const heroImage = settings.heroImageUrl
   const featuredImage = settings.heroFeaturedImageUrl
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background */}
-      {heroImage ? (
-        <Image
-          src={heroImage}
-          alt={title}
-          fill
-          className="object-cover object-center"
-          priority
-          sizes="100vw"
-        />
-      ) : (
-        <div className="absolute inset-0 hero-bg" />
-      )}
-
-      {/* Overlay — only shown when a hero image is set, for text readability */}
-      {heroImage && <div className="absolute inset-0 bg-gradient-to-b from-charcoal/60 via-charcoal/40 to-charcoal/70" />}
+      <div className="absolute inset-0 hero-bg" />
 
       {/* Featured circle image */}
       {featuredImage && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full overflow-hidden pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] rounded-full overflow-hidden pointer-events-none">
           <Image
             src={featuredImage}
             alt={title}
             fill
-            className="object-cover opacity-50"
-            sizes="520px"
+            className="object-cover opacity-70"
+            sizes="280px"
           />
-          <div className="absolute inset-0 bg-charcoal/20" />
         </div>
       )}
 
