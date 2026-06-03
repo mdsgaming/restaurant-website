@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { fetchAllPublicData, getRestaurantSettingsServer } from '@/lib/firestoreServer'
+import { AnnouncementBanner } from '@/components/public/AnnouncementBanner'
 import { HeroSection } from '@/components/public/HeroSection'
 import { AboutSection } from '@/components/public/AboutSection'
 import { MenuSection } from '@/components/public/MenuSection'
@@ -49,12 +50,7 @@ async function HomePageContent() {
 
   return (
     <>
-      {mergedSettings.announcementActive && mergedSettings.announcement && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-gold text-charcoal text-center py-2 text-sm font-medium">
-          {mergedSettings.announcement}
-        </div>
-      )}
-
+      <AnnouncementBanner />
       <HeroSection />
       <AboutSection />
       <MenuSection categories={categories} items={items} />
