@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Check, X, ChevronDown, ChevronUp, Eye } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Check, X, Eye, Flame, Leaf, ShieldCheck, Star } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   getPendingChanges,
@@ -11,7 +11,7 @@ import {
   addMenuItem,
   updateMenuItem,
 } from '@/lib/firestore'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, formatPrice } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
 import type { PendingChange } from '@/types'
@@ -19,6 +19,81 @@ import toast from 'react-hot-toast'
 import { SectionLoader } from '@/components/ui/LoadingSpinner'
 
 type FilterType = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'
+
+function Field({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex gap-3">
+      <span className="text-xs font-medium text-gray-500 w-24 shrink-0 pt-0.5">{label}</span>
+      <span className="text-sm text-gray-800">{value}</span>
+    </div>
+  )
+}
+
+function ChangeDataPreview({ change }: { change: PendingChange }) {
+  const d = change.data as Record<string, unknown>
+
+  const isSpicy = !!d.isSpicy
+  const isVeg = !!d.isVegetarian
+  const isGF = !!d.isGlutenFree
+  const isFeatured = !!d.isFeatured
+
+  if (change.type === 'MENU_ITEM_ADD' || change.type === 'MENU_ITEM_EDIT') {
+    return (
+      <div className="space-y-3">
+        {typeof d.imageUrl === 'string' && d.imageUrl && (
+          <img src={d.imageUrl} alt={String(d.name ?? '')} className="w-full h-40 object-cover rounded-sm border border-gray-200" />
+        )}
+        <Field label="Name" value={<span className="font-semibold">{String(d.name ?? '—')}</span>} />
+        {d.price !== undefined && (
+          <Field label="Price" value={formatPrice(Number(d.price))} />
+        )}
+        {!!d.description && (
+          <Field label="Description" value={String(d.description)} />
+        )}
+        <Field
+          label="Tags"
+          value={
+            <div className="flex flex-wrap gap-1.5">
+              {isSpicy && <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 text-xs rounded-full"><Flame className="w-3 h-3" />Spicy</span>}
+              {isVeg && <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs rounded-full"><Leaf className="w-3 h-3" />Vegetarian</span>}
+              {isGF && <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-full"><ShieldCheck className="w-3 h-3" />Gluten-Free</span>}
+              {isFeatured && <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-600 text-xs rounded-full"><Star className="w-3 h-3" />Featured</span>}
+              {!isSpicy && !isVeg && !isGF && !isFeatured && <span className="text-gray-400 text-xs">None</span>}
+            </div>
+          }
+        />
+        <Field label="Available" value={d.isAvailable ? 'Yes' : 'No'} />
+      </div>
+    )
+  }
+
+  if (change.type === 'GALLERY_ADD' || change.type === 'GALLERY_EDIT') {
+    return (
+      <div className="space-y-3">
+        {d.type === 'IMAGE' && typeof d.url === 'string' && d.url && (
+          <img src={d.url} alt={String(d.caption ?? '')} className="w-full h-48 object-cover rounded-sm border border-gray-200" />
+        )}
+        <Field label="Type" value={String(d.type ?? '—')} />
+        {!!d.caption && <Field label="Caption" value={String(d.caption)} />}
+      </div>
+    )
+  }
+
+  // Fallback: render key/value pairs for any other type
+  return (
+    <div className="space-y-2">
+      {Object.entries(d)
+        .filter(([k]) => k !== 'id' && k !== 'sortOrder')
+        .map(([key, val]) => (
+          <Field
+            key={key}
+            label={key}
+            value={typeof val === 'boolean' ? (val ? 'Yes' : 'No') : String(val ?? '—')}
+          />
+        ))}
+    </div>
+  )
+}
 
 export default function ApprovalsPage() {
   const { appUser, canApprove } = useAuth()
@@ -240,10 +315,8 @@ export default function ApprovalsPage() {
 
       {/* Detail Modal */}
       <Modal isOpen={!!detailModal} onClose={() => setDetailModal(null)} title="Change Details" size="md">
-        <div className="p-6">
-          <pre className="text-xs bg-gray-50 border border-gray-200 rounded p-4 overflow-auto max-h-64 text-gray-700">
-            {JSON.stringify(detailModal?.data, null, 2)}
-          </pre>
+        <div className="p-6 space-y-4">
+          {detailModal && <ChangeDataPreview change={detailModal} />}
         </div>
       </Modal>
     </div>
