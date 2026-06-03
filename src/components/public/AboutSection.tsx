@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { Award, Leaf, Clock } from 'lucide-react'
 import { getRestaurantSettings } from '@/lib/firestore'
 import { DEFAULT_SETTINGS } from '@/lib/utils'
@@ -28,8 +27,6 @@ const FEATURES = [
 export function AboutSection() {
   const [settings, setSettings] = useState<Partial<RestaurantSettings>>({
     aboutText: DEFAULT_SETTINGS.aboutText,
-    aboutChefName: DEFAULT_SETTINGS.aboutChefName,
-    aboutChefTitle: DEFAULT_SETTINGS.aboutChefTitle,
   })
 
   useEffect(() => {
@@ -41,40 +38,7 @@ export function AboutSection() {
   return (
     <section id="about" className="py-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Image side */}
-          <div className="relative">
-            <div className="aspect-[4/5] rounded-sm overflow-hidden bg-white/5 relative border border-cream/10">
-              {settings.aboutImageUrl ? (
-                <Image
-                  src={settings.aboutImageUrl}
-                  alt="About our restaurant"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              ) : (
-                <div className="w-full h-full hero-bg flex items-center justify-center">
-                  <p className="text-cream/40 font-serif text-xl italic">Restaurant Photo</p>
-                </div>
-              )}
-            </div>
-            {/* Floating chef card */}
-            <div className="absolute -bottom-6 -right-6 bg-white/10 backdrop-blur-sm p-5 shadow-xl rounded-sm border-l-4 border-gold max-w-[200px] border border-cream/20">
-              <p className="font-serif text-base text-cream font-semibold">
-                {settings.aboutChefName || DEFAULT_SETTINGS.aboutChefName}
-              </p>
-              <p className="text-xs text-cream/60 mt-1">
-                {settings.aboutChefTitle || DEFAULT_SETTINGS.aboutChefTitle}
-              </p>
-            </div>
-            {/* Year badge */}
-            <div className="absolute -top-6 -left-6 w-20 h-20 bg-primary rounded-full flex flex-col items-center justify-center shadow-lg">
-              <span className="font-serif text-gold font-bold text-2xl leading-none">15</span>
-              <span className="text-cream/70 text-xs uppercase tracking-wider">Years</span>
-            </div>
-          </div>
-
+        <div className="max-w-3xl mx-auto">
           {/* Text side */}
           <div className="space-y-8">
             <div>
