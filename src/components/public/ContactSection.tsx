@@ -130,13 +130,6 @@ export function ContactSection() {
               </div>
             )}
 
-            {/* Reservation note */}
-            <div className="p-5 bg-primary/20 border-l-4 border-gold rounded-sm">
-              <h4 className="font-semibold text-cream text-sm mb-1">Reservations</h4>
-              <p className="text-cream/60 text-xs leading-relaxed">
-                For reservations, please call or email us directly. Walk-ins welcome based on availability.
-              </p>
-            </div>
           </div>
         </div>
       </div>
