@@ -50,9 +50,12 @@ export function OrderSection({ platforms }: { platforms: DeliveryPlatform[] }) {
 
         {activePlatforms.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-cream/50 font-serif italic">
-              Online ordering coming soon. Call us to place an order!
-            </p>
+            <Link
+              href="/order"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gold text-charcoal font-bold text-sm tracking-wider uppercase rounded-sm hover:bg-gold-dark transition-all duration-200 active:scale-95"
+            >
+              Order Now
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">

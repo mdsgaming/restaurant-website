@@ -1,4 +1,4 @@
-import { cert, getApps, initializeApp, App } from 'firebase-admin/app'
+import { cert, getApps, initializeApp, App, ServiceAccount } from 'firebase-admin/app'
 import { getFirestore, Firestore } from 'firebase-admin/firestore'
 import { getAuth, Auth } from 'firebase-admin/auth'
 import { getStorage, Storage } from 'firebase-admin/storage'
@@ -8,29 +8,16 @@ let _db: Firestore | null = null
 let _auth: Auth | null = null
 let _storage: Storage | null = null
 
-function parsePrivateKey(raw: string | undefined): string {
-  if (!raw) throw new Error('FIREBASE_PRIVATE_KEY is not set')
-  // If stored as a JSON string with surrounding quotes (common Vercel pattern), parse it
-  if (raw.startsWith('"') && raw.endsWith('"')) {
-    return JSON.parse(raw) as string
-  }
-  // Otherwise replace escaped newlines with real newlines
-  return raw.replace(/\\n/g, '\n')
-}
-
 function initApp(): App {
   if (getApps().length > 0) return getApps()[0]
 
-  const projectId = process.env.FIREBASE_PROJECT_ID
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
-  const privateKey = parsePrivateKey(process.env.FIREBASE_PRIVATE_KEY)
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT
+  if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT env var is not set')
 
-  if (!projectId || !clientEmail) {
-    throw new Error('Missing Firebase Admin credentials in environment variables')
-  }
+  const serviceAccount = JSON.parse(raw) as ServiceAccount
 
   return initializeApp({
-    credential: cert({ projectId, clientEmail, privateKey }),
+    credential: cert(serviceAccount),
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   })
 }
