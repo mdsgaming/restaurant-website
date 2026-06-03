@@ -8,14 +8,24 @@ let _db: Firestore | null = null
 let _auth: Auth | null = null
 let _storage: Storage | null = null
 
+function parsePrivateKey(raw: string | undefined): string {
+  if (!raw) throw new Error('FIREBASE_PRIVATE_KEY is not set')
+  // If stored as a JSON string with surrounding quotes (common Vercel pattern), parse it
+  if (raw.startsWith('"') && raw.endsWith('"')) {
+    return JSON.parse(raw) as string
+  }
+  // Otherwise replace escaped newlines with real newlines
+  return raw.replace(/\\n/g, '\n')
+}
+
 function initApp(): App {
   if (getApps().length > 0) return getApps()[0]
 
   const projectId = process.env.FIREBASE_PROJECT_ID
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+  const privateKey = parsePrivateKey(process.env.FIREBASE_PRIVATE_KEY)
 
-  if (!projectId || !clientEmail || !privateKey) {
+  if (!projectId || !clientEmail) {
     throw new Error('Missing Firebase Admin credentials in environment variables')
   }
 
