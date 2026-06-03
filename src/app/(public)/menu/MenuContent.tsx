@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { collection, query, orderBy, getDocs } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 import { Flame, Leaf, ShieldCheck } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 import { SectionLoader } from '@/components/ui/LoadingSpinner'
@@ -14,10 +16,12 @@ export function MenuContent() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/public/data')
-        const data = await res.json()
-        setCategories(data.categories ?? [])
-        setItems(data.items ?? [])
+        const [catSnap, itemSnap] = await Promise.all([
+          getDocs(query(collection(db, 'menuCategories'), orderBy('sortOrder'))),
+          getDocs(query(collection(db, 'menuItems'), orderBy('sortOrder'))),
+        ])
+        setCategories(catSnap.docs.map((d) => ({ id: d.id, ...d.data() } as MenuCategory)))
+        setItems(itemSnap.docs.map((d) => ({ id: d.id, ...d.data() } as MenuItem)))
       } catch (e) {
         console.error('Failed to load menu:', e)
       } finally {
