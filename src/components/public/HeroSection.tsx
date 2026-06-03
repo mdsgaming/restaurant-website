@@ -31,7 +31,7 @@ export function HeroSection() {
 
       {/* Featured circle image */}
       {featuredImage && (
-        <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] rounded-full overflow-hidden pointer-events-none bg-charcoal/40">
+        <div className="absolute top-[18%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] rounded-full overflow-hidden pointer-events-none bg-charcoal/40">
           <Image
             src={featuredImage}
             alt={title}
