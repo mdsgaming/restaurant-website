@@ -39,7 +39,7 @@ export function GallerySection({ items }: { items: GalleryItem[] }) {
           </div>
         )}
 
-        {items.length > 9 && (
+        {displayItems.length > 0 && (
           <div className="text-center mt-12">
             <Link
               href="/gallery"
