@@ -18,13 +18,10 @@ export default function GalleryPage() {
   useEffect(() => {
     async function load() {
       try {
-        const q = query(
-          collection(db, 'gallery'),
-          where('isActive', '==', true),
-          orderBy('sortOrder')
-        )
+        const q = query(collection(db, 'gallery'), orderBy('sortOrder'))
         const snap = await getDocs(q)
-        setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() } as GalleryItem)))
+        const all = snap.docs.map((d) => ({ id: d.id, ...d.data() } as GalleryItem))
+        setItems(all.filter((i) => i.isActive))
       } catch (e) {
         console.error(e)
       } finally {
@@ -123,6 +120,7 @@ export default function GalleryPage() {
         >
           <button
             type="button"
+            aria-label="Close"
             className="absolute top-4 right-4 text-cream/60 hover:text-cream p-2 z-10"
             onClick={() => setLightbox(null)}
           >

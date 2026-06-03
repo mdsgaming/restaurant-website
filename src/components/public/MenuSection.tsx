@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { Flame, Leaf, ArrowRight } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 import type { MenuCategory, MenuItem } from '@/types'
@@ -69,12 +68,11 @@ function MenuCard({ item }: { item: MenuItem }) {
     <div className="group overflow-hidden rounded-sm border border-cream/10 bg-white/5 hover:bg-white/10 transition-all duration-200">
       <div className="aspect-square relative bg-white/5 overflow-hidden">
         {item.imageUrl ? (
-          <Image
+          <img
             src={item.imageUrl}
             alt={item.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-primary/20 flex items-center justify-center">

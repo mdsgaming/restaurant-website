@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 
 import { Metadata } from 'next'
-import Image from 'next/image'
 import { Flame, Leaf, ShieldCheck } from 'lucide-react'
 import { getMenuCategoriesServer, getMenuItemsServer, getRestaurantSettingsServer } from '@/lib/firestoreServer'
 import { formatPrice } from '@/lib/utils'
@@ -109,13 +108,12 @@ function MenuItemRow({ item }: { item: MenuItem }) {
   return (
     <div className="flex gap-4 p-4 bg-white/5 rounded-sm border border-cream/10 hover:border-cream/20 hover:bg-white/10 transition-all">
       {item.imageUrl && (
-        <div className="w-20 h-20 rounded-sm overflow-hidden shrink-0 relative bg-white/10">
-          <Image
+        <div className="w-20 h-20 rounded-sm overflow-hidden shrink-0 bg-white/10">
+          <img
             src={item.imageUrl}
             alt={item.name}
-            fill
-            className="object-cover"
-            sizes="80px"
+            className="w-full h-full object-cover"
+            loading="lazy"
           />
         </div>
       )}
