@@ -62,7 +62,7 @@ export default function OrderPage() {
   const active = platforms.filter((p) => p.isActive && p.url)
 
   return (
-    <div className="min-h-screen bg-charcoal">
+    <div className="min-h-screen">
       {/* Hero */}
       <div className="relative py-32 overflow-hidden">
         <div className="absolute inset-0 hero-bg opacity-80" />
