@@ -22,7 +22,7 @@ export function HeroSection() {
 
   const title = settings.heroTitle || DEFAULT_SETTINGS.heroTitle
   const subtitle = settings.heroSubtitle || DEFAULT_SETTINGS.heroSubtitle
-  const featuredImage = settings.heroFeaturedImageUrl
+  const featuredImage = settings.heroFeaturedImageUrl || settings.logoUrl
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -31,13 +31,13 @@ export function HeroSection() {
 
       {/* Featured circle image */}
       {featuredImage && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] rounded-full overflow-hidden pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] h-[260px] rounded-full overflow-hidden pointer-events-none bg-charcoal/40">
           <Image
             src={featuredImage}
             alt={title}
             fill
-            className="object-cover opacity-70"
-            sizes="280px"
+            className="object-contain p-6 opacity-90"
+            sizes="260px"
           />
         </div>
       )}
