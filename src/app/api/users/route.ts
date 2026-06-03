@@ -38,9 +38,15 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ uid: userRecord.uid }, { status: 201 })
   } catch (error: unknown) {
-    const msg = (error as { code?: string; message?: string }).code === 'auth/email-already-exists'
-      ? 'Email already in use'
-      : (error as Error).message || 'Failed to create user'
+    console.error('[POST /api/users]', error)
+    const err = error as { code?: string; message?: string }
+    const code = err.code ?? ''
+    const msg =
+      code === 'auth/email-already-exists' ? 'A user with this email already exists' :
+      code === 'auth/invalid-email' ? 'Invalid email address' :
+      code === 'auth/weak-password' ? 'Password must be at least 6 characters' :
+      code === 'auth/invalid-password' ? 'Password must be at least 6 characters' :
+      err.message || 'Failed to create user'
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
