@@ -28,6 +28,11 @@ export function ImageUpload({
   const [preview, setPreview] = useState<string>(currentUrl || '')
   const progressBarRef = useRef<HTMLDivElement>(null)
 
+  // Sync preview when currentUrl prop changes (e.g. after parent fetches saved settings)
+  useEffect(() => {
+    if (!uploading) setPreview(currentUrl || '')
+  }, [currentUrl])
+
   useEffect(() => {
     if (progressBarRef.current) {
       progressBarRef.current.style.width = `${progress}%`

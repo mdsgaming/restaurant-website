@@ -50,6 +50,9 @@ export default function AdminSettingsPage() {
         resource: 'settings',
         details: { tab: activeTab },
       })
+      // Re-fetch to confirm saved values are reflected in the previews
+      const saved = await getRestaurantSettings()
+      if (saved) setForm({ ...DEFAULT_SETTINGS, ...saved })
       toast.success('Settings saved!')
     } catch (e) {
       toast.error('Failed to save settings')
