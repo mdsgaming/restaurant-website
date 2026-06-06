@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminAuth, getAdminDb } from '@/lib/firebaseAdmin'
 import { DEFAULT_SETTINGS } from '@/lib/utils'
 
+export const runtime = 'edge'
+
 export async function POST(req: NextRequest) {
   try {
     const adminAuth = getAdminAuth()

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminAuth, getAdminDb } from '@/lib/firebaseAdmin'
 
+export const runtime = 'edge'
+
 export async function POST(req: NextRequest) {
   try {
     const { name, email, password, role } = await req.json()

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
+
+export const runtime = 'edge'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { getR2Client, getR2Bucket, getR2PublicUrl, validateUpload } from '@/lib/r2'
 

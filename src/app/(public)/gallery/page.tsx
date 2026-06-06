@@ -1,5 +1,7 @@
 'use client'
 
+export const runtime = 'edge'
+
 import { useState, useEffect } from 'react'
 import { Play, ZoomIn, X } from 'lucide-react'
 import { collection, query, orderBy, getDocs } from 'firebase/firestore'
