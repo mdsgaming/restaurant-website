@@ -16,9 +16,6 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    serverComponentsExternalPackages: ['firebase-admin', '@aws-sdk/client-s3'],
-  },
 }
 
 module.exports = nextConfig
