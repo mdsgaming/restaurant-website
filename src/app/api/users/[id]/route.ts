@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminAuth } from '@/lib/firebaseAdmin'
+import { getUser, updateUser, setCustomUserClaims, deleteUser } from '@/lib/firebaseAuthRest'
 import { fsUpdate, fsDelete } from '@/lib/firestoreRest'
 import { getGoogleAccessToken } from '@/lib/googleAuth'
 
@@ -12,10 +12,10 @@ export async function PATCH(
   try {
     const { role, isActive, name } = await req.json()
     const uid = params.id
-    const adminAuth = getAdminAuth()
+    const token = await getGoogleAccessToken()
 
     const updates: Record<string, unknown> = {}
-    const authUpdates: Record<string, unknown> = {}
+    const authUpdates: { displayName?: string; disabled?: boolean } = {}
     const claimUpdates: Record<string, unknown> = {}
 
     if (role) {
@@ -37,18 +37,17 @@ export async function PATCH(
     }
 
     if (Object.keys(authUpdates).length > 0) {
-      await adminAuth.updateUser(uid, authUpdates)
+      await updateUser(uid, authUpdates, token)
     }
 
     if (Object.keys(claimUpdates).length > 0) {
-      const user = await adminAuth.getUser(uid)
-      await adminAuth.setCustomUserClaims(uid, {
-        ...user.customClaims,
+      const user = await getUser(uid, token)
+      await setCustomUserClaims(uid, {
+        ...(user.customClaims ?? {}),
         ...claimUpdates,
-      })
+      }, token)
     }
 
-    const token = await getGoogleAccessToken()
     await fsUpdate(`users/${uid}`, { ...updates, updatedAt: new Date() }, token)
 
     return NextResponse.json({ success: true })
@@ -64,8 +63,8 @@ export async function DELETE(
 ) {
   try {
     const uid = params.id
-    await getAdminAuth().deleteUser(uid)
     const token = await getGoogleAccessToken()
+    await deleteUser(uid, token)
     await fsDelete(`users/${uid}`, token)
     return NextResponse.json({ success: true })
   } catch (error) {

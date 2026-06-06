@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminAuth } from '@/lib/firebaseAdmin'
+import { createUser, getUserByEmail, setCustomUserClaims } from '@/lib/firebaseAuthRest'
 import { fsGet, fsSet, fsAdd } from '@/lib/firestoreRest'
 import { getGoogleAccessToken } from '@/lib/googleAuth'
 import { DEFAULT_SETTINGS } from '@/lib/utils'
@@ -8,7 +8,6 @@ export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
   try {
-    const adminAuth = getAdminAuth()
     const authHeader = req.headers.get('Authorization')
     const setupKey = process.env.SETUP_SECRET_KEY
 
@@ -36,18 +35,18 @@ export async function POST(req: NextRequest) {
 
     let devUid: string
     try {
-      const existing = await adminAuth.getUserByEmail(devEmail)
+      const existing = await getUserByEmail(devEmail, token)
       devUid = existing.uid
     } catch {
-      const userRecord = await adminAuth.createUser({
+      const userRecord = await createUser({
         email: devEmail,
         password: devPassword,
         displayName: devName,
-      })
+      }, token)
       devUid = userRecord.uid
     }
 
-    await adminAuth.setCustomUserClaims(devUid, { role: 'DEVELOPER' })
+    await setCustomUserClaims(devUid, { role: 'DEVELOPER' }, token)
 
     await fsSet(`users/${devUid}`, {
       email: devEmail,

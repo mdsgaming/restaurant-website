@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminAuth } from '@/lib/firebaseAdmin'
+import { createUser, setCustomUserClaims } from '@/lib/firebaseAuthRest'
 import { fsSet, fsList } from '@/lib/firestoreRest'
 import { getGoogleAccessToken } from '@/lib/googleAuth'
 
@@ -21,18 +21,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
     }
 
-    const adminAuth = getAdminAuth()
-
-    const userRecord = await adminAuth.createUser({
-      email,
-      password,
-      displayName: name,
-    })
-
-    await adminAuth.setCustomUserClaims(userRecord.uid, { role })
-
     const token = await getGoogleAccessToken()
-    await fsSet(`users/${userRecord.uid}`, {
+
+    const { uid } = await createUser({ email, password, displayName: name }, token)
+    await setCustomUserClaims(uid, { role }, token)
+    await fsSet(`users/${uid}`, {
       email,
       name,
       role,
@@ -40,7 +33,7 @@ export async function POST(req: NextRequest) {
       createdAt: new Date(),
     }, token)
 
-    return NextResponse.json({ uid: userRecord.uid }, { status: 201 })
+    return NextResponse.json({ uid }, { status: 201 })
   } catch (error: unknown) {
     console.error('[POST /api/users]', error)
     const err = error as { code?: string; message?: string }
