@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminAuth, getAdminDb } from '@/lib/firebaseAdmin'
+import { getAdminAuth } from '@/lib/firebaseAdmin'
+import { fsUpdate, fsDelete } from '@/lib/firestoreRest'
+import { getGoogleAccessToken } from '@/lib/googleAuth'
 
 export const runtime = 'edge'
 
@@ -11,7 +13,6 @@ export async function PATCH(
     const { role, isActive, name } = await req.json()
     const uid = params.id
     const adminAuth = getAdminAuth()
-    const adminDb = getAdminDb()
 
     const updates: Record<string, unknown> = {}
     const authUpdates: Record<string, unknown> = {}
@@ -47,13 +48,12 @@ export async function PATCH(
       })
     }
 
-    await adminDb.collection('users').doc(uid).update({
-      ...updates,
-      updatedAt: new Date(),
-    })
+    const token = await getGoogleAccessToken()
+    await fsUpdate(`users/${uid}`, { ...updates, updatedAt: new Date() }, token)
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('[PATCH /api/users/:id]', error)
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 })
   }
 }
@@ -65,9 +65,11 @@ export async function DELETE(
   try {
     const uid = params.id
     await getAdminAuth().deleteUser(uid)
-    await getAdminDb().collection('users').doc(uid).delete()
+    const token = await getGoogleAccessToken()
+    await fsDelete(`users/${uid}`, token)
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('[DELETE /api/users/:id]', error)
     return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 })
   }
 }

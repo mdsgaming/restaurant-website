@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminAuth, getAdminDb } from '@/lib/firebaseAdmin'
+import { getAdminAuth } from '@/lib/firebaseAdmin'
+import { fsSet, fsList } from '@/lib/firestoreRest'
+import { getGoogleAccessToken } from '@/lib/googleAuth'
 
 export const runtime = 'edge'
 
@@ -20,7 +22,6 @@ export async function POST(req: NextRequest) {
     }
 
     const adminAuth = getAdminAuth()
-    const adminDb = getAdminDb()
 
     const userRecord = await adminAuth.createUser({
       email,
@@ -30,13 +31,14 @@ export async function POST(req: NextRequest) {
 
     await adminAuth.setCustomUserClaims(userRecord.uid, { role })
 
-    await adminDb.collection('users').doc(userRecord.uid).set({
+    const token = await getGoogleAccessToken()
+    await fsSet(`users/${userRecord.uid}`, {
       email,
       name,
       role,
       isActive: true,
       createdAt: new Date(),
-    })
+    }, token)
 
     return NextResponse.json({ uid: userRecord.uid }, { status: 201 })
   } catch (error: unknown) {
@@ -55,10 +57,12 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    const snap = await getAdminDb().collection('users').get()
-    const users = snap.docs.map((d) => ({ uid: d.id, ...d.data() }))
+    const token = await getGoogleAccessToken()
+    const docs = await fsList('users', token)
+    const users = docs.map(({ id, ...rest }) => ({ uid: id, ...rest }))
     return NextResponse.json(users)
   } catch (error) {
+    console.error('[GET /api/users]', error)
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
   }
 }

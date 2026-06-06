@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminAuth, getAdminDb } from '@/lib/firebaseAdmin'
+import { getAdminAuth } from '@/lib/firebaseAdmin'
+import { fsGet, fsSet, fsAdd } from '@/lib/firestoreRest'
+import { getGoogleAccessToken } from '@/lib/googleAuth'
 import { DEFAULT_SETTINGS } from '@/lib/utils'
 
 export const runtime = 'edge'
@@ -7,7 +9,6 @@ export const runtime = 'edge'
 export async function POST(req: NextRequest) {
   try {
     const adminAuth = getAdminAuth()
-    const adminDb = getAdminDb()
     const authHeader = req.headers.get('Authorization')
     const setupKey = process.env.SETUP_SECRET_KEY
 
@@ -15,7 +16,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const settingsDoc = await adminDb.collection('settings').doc('restaurant').get()
+    const token = await getGoogleAccessToken()
+
+    const settingsDoc = await fsGet('settings/restaurant', token)
     if (settingsDoc.exists) {
       return NextResponse.json({ error: 'Setup already completed' }, { status: 400 })
     }
@@ -46,15 +49,15 @@ export async function POST(req: NextRequest) {
 
     await adminAuth.setCustomUserClaims(devUid, { role: 'DEVELOPER' })
 
-    await adminDb.collection('users').doc(devUid).set({
+    await fsSet(`users/${devUid}`, {
       email: devEmail,
       name: devName,
       role: 'DEVELOPER',
       isActive: true,
       createdAt: new Date(),
-    })
+    }, token)
 
-    await adminDb.collection('settings').doc('restaurant').set(DEFAULT_SETTINGS)
+    await fsSet('settings/restaurant', DEFAULT_SETTINGS as unknown as Record<string, unknown>, token)
 
     const platforms = [
       { platform: 'UBER_EATS', displayName: 'Uber Eats', url: '', isActive: false },
@@ -62,7 +65,7 @@ export async function POST(req: NextRequest) {
       { platform: 'GRUBHUB', displayName: 'Grubhub', url: '', isActive: false },
     ]
     for (const p of platforms) {
-      await adminDb.collection('deliveryPlatforms').doc(p.platform).set(p)
+      await fsSet(`deliveryPlatforms/${p.platform}`, p, token)
     }
 
     const categories = [
@@ -74,7 +77,7 @@ export async function POST(req: NextRequest) {
     ]
     const categoryIds: string[] = []
     for (const cat of categories) {
-      const ref = await adminDb.collection('menuCategories').add(cat)
+      const ref = await fsAdd('menuCategories', cat, token)
       categoryIds.push(ref.id)
     }
 
@@ -105,7 +108,7 @@ export async function POST(req: NextRequest) {
       { categoryId: categoryIds[4], name: 'Kunu Aya (Tigernut Milk)', description: 'Creamy, naturally sweet tigernut drink — dairy-free and nourishing', price: 6, isAvailable: true, isSpicy: false, isVegetarian: true, isGlutenFree: true, isFeatured: false, sortOrder: 2, imageUrl: '' },
     ]
     for (const item of menuItems) {
-      await adminDb.collection('menuItems').add({ ...item, createdAt: new Date() })
+      await fsAdd('menuItems', { ...item, createdAt: new Date() }, token)
     }
 
     return NextResponse.json({
