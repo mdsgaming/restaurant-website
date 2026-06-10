@@ -124,9 +124,14 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-cream/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-cream/40">
           <p>© {new Date().getFullYear()} {name}. All rights reserved.</p>
-          <Link href="/auth/login" className="hover:text-cream/60 transition-colors">
-            Staff Login
-          </Link>
+          <div className="flex items-center gap-4">
+            <a href="https://linktr.ee/Aysmithy.2" target="_blank" rel="noopener noreferrer" className="hover:text-cream/60 transition-colors">
+              Contact Developer
+            </a>
+            <Link href="/auth/login" className="hover:text-cream/60 transition-colors">
+              Staff Login
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
