@@ -89,14 +89,12 @@ export function OrderSection({ platforms, phone }: { platforms: DeliveryPlatform
           </div>
         )}
 
-        {phone && (
-          <p className="text-center mt-10 text-cream/50 text-sm">
-            Prefer to call? Reach us at{' '}
-            <a href={`tel:${phone.replace(/\s+/g, '')}`} className="text-gold hover:underline font-medium">
-              {phone}
-            </a>
-          </p>
-        )}
+        <p className="text-center mt-10 text-cream/50 text-sm">
+          Prefer to call? Reach us at{' '}
+          <a href="tel:+12543506107" className="text-gold hover:underline font-medium">
+            +1 (254) 350-6107
+          </a>
+        </p>
       </div>
     </section>
   )

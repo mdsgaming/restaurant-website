@@ -89,7 +89,7 @@ export default function OrderPage() {
             <h2 className="font-serif text-2xl text-cream">Online Ordering Coming Soon</h2>
             <p className="text-cream/60">Call us to place an order or visit us in person.</p>
             <a
-              href="tel:+15551234567"
+              href="tel:+12543506107"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gold text-charcoal font-semibold rounded-sm hover:bg-gold-dark transition-colors"
             >
               <Phone className="w-4 h-4" /> Call to Order
