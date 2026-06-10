@@ -15,6 +15,7 @@ import {
   LogOut,
   ExternalLink,
   ChevronLeft,
+  ShoppingBag,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -31,6 +32,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
+  { label: 'Orders', href: '/admin/orders', icon: ShoppingBag, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Menu', href: '/admin/menu', icon: UtensilsCrossed, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Gallery', href: '/admin/gallery', icon: ImageIcon, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Approvals', href: '/admin/approvals', icon: ClipboardCheck, roles: ['DEVELOPER', 'ADMIN'] },

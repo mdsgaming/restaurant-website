@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import { collection, query, orderBy, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { Flame, Leaf, ShieldCheck } from 'lucide-react'
+import { Flame, Leaf, ShieldCheck, Plus } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 import { SectionLoader } from '@/components/ui/LoadingSpinner'
+import { useCart } from '@/contexts/CartContext'
 import type { MenuItem, MenuCategory } from '@/types'
 
 export function MenuContent() {
@@ -78,6 +79,8 @@ function CategorySection({ category, items }: { category: MenuCategory; items: M
 }
 
 function MenuItemRow({ item }: { item: MenuItem }) {
+  const { addItem } = useCart()
+
   return (
     <div className="flex gap-4 p-4 bg-white/5 rounded-sm border border-cream/10 hover:border-cream/20 hover:bg-white/10 transition-all">
       {item.imageUrl && (
@@ -100,7 +103,17 @@ function MenuItemRow({ item }: { item: MenuItem }) {
               {item.isGlutenFree && <ShieldCheck className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
             </div>
           </div>
-          <span className="text-gold font-bold whitespace-nowrap">{formatPrice(item.price)}</span>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-gold font-bold whitespace-nowrap">{formatPrice(item.price)}</span>
+            <button
+              type="button"
+              onClick={() => addItem(item)}
+              className="w-8 h-8 flex items-center justify-center bg-gold/10 border border-gold/30 text-gold rounded-sm hover:bg-gold hover:text-charcoal transition-all duration-200"
+              aria-label={`Add ${item.name} to order`}
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         {item.description && (
           <p className="text-sm text-cream/55 mt-1 leading-relaxed">{item.description}</p>

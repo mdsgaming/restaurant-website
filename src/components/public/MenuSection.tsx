@@ -1,6 +1,9 @@
+'use client'
+
 import Link from 'next/link'
-import { Flame, Leaf, ArrowRight } from 'lucide-react'
+import { Flame, Leaf, ArrowRight, Plus } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
+import { useCart } from '@/contexts/CartContext'
 import type { MenuCategory, MenuItem } from '@/types'
 
 interface MenuSectionProps {
@@ -64,6 +67,8 @@ export function MenuSection({ categories, items }: MenuSectionProps) {
 }
 
 function MenuCard({ item }: { item: MenuItem }) {
+  const { addItem } = useCart()
+
   return (
     <div className="group overflow-hidden rounded-sm border border-cream/10 bg-white/5 hover:bg-white/10 transition-all duration-200">
       <div className="aspect-square relative bg-white/5 overflow-hidden">
@@ -100,6 +105,14 @@ function MenuCard({ item }: { item: MenuItem }) {
         {item.description && (
           <p className="text-xs text-cream/55 mt-1.5 leading-relaxed line-clamp-2">{item.description}</p>
         )}
+        <button
+          type="button"
+          onClick={() => addItem(item)}
+          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 border border-cream/20 text-cream/70 text-xs font-medium rounded-sm hover:bg-gold hover:text-charcoal hover:border-gold transition-all duration-200"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Add to Order
+        </button>
       </div>
     </div>
   )

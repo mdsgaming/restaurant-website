@@ -162,6 +162,38 @@ export interface AuditLog {
   createdAt: Timestamp | Date
 }
 
+// ─── Orders ────────────────────────────────────────────────────────────────────
+
+export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+export type OrderType = 'DINE_IN' | 'TAKEOUT'
+
+export interface CartItem {
+  id: string
+  name: string
+  price: number
+  quantity: number
+}
+
+export interface OrderItem {
+  itemId: string
+  name: string
+  price: number
+  quantity: number
+}
+
+export interface Order {
+  id: string
+  customerName: string
+  customerPhone: string
+  orderType: OrderType
+  items: OrderItem[]
+  notes?: string
+  status: OrderStatus
+  total: number
+  createdAt: string | Timestamp | Date
+  updatedAt: string | Timestamp | Date
+}
+
 // ─── Analytics ────────────────────────────────────────────────────────────────
 
 export interface AnalyticsSummary {
