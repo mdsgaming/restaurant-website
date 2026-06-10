@@ -25,7 +25,7 @@ const PLATFORM_META = {
   },
 }
 
-export function OrderSection({ platforms }: { platforms: DeliveryPlatform[] }) {
+export function OrderSection({ platforms, phone }: { platforms: DeliveryPlatform[]; phone?: string }) {
   const activePlatforms = platforms.filter((p) => p.isActive)
 
   return (
@@ -89,12 +89,14 @@ export function OrderSection({ platforms }: { platforms: DeliveryPlatform[] }) {
           </div>
         )}
 
-        <p className="text-center mt-10 text-cream/50 text-sm">
-          Prefer to call? Reach us at{' '}
-          <a href="tel:+15551234567" className="text-gold hover:underline font-medium">
-            +1 (555) 123-4567
-          </a>
-        </p>
+        {phone && (
+          <p className="text-center mt-10 text-cream/50 text-sm">
+            Prefer to call? Reach us at{' '}
+            <a href={`tel:${phone.replace(/\s+/g, '')}`} className="text-gold hover:underline font-medium">
+              {phone}
+            </a>
+          </p>
+        )}
       </div>
     </section>
   )
