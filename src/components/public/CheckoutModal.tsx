@@ -149,6 +149,12 @@ export function CheckoutModal({ onClose }: Props) {
                 >
                   {loading ? 'Placing Order…' : 'Confirm Order'}
                 </button>
+                <p className="text-center text-xs text-cream/30 mt-3">
+                  To cancel an order, please call us at{' '}
+                  <a href="tel:+12543506107" className="text-cream/50 hover:text-cream underline transition-colors">
+                    +1 (254) 350-6107
+                  </a>
+                </p>
               </div>
             </form>
           </>
