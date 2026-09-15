@@ -39,6 +39,9 @@ const ALLOWED_MIME_TYPES = new Set([
   'video/mp4',
   'video/quicktime',
   'video/webm',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ])
 
 const MAX_SIZES: Record<string, number> = {
@@ -47,6 +50,7 @@ const MAX_SIZES: Record<string, number> = {
   branding: 10 * 1024 * 1024, // 10 MB
   about: 10 * 1024 * 1024,    // 10 MB
   uploads: 20 * 1024 * 1024,  // 20 MB
+  resumes: 8 * 1024 * 1024,   // 8 MB
 }
 
 export function validateUpload(

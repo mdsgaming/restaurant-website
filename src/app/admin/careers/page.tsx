@@ -9,6 +9,7 @@ import {
   Mail,
   Phone,
   X,
+  FileText,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
@@ -26,7 +27,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { formatDateTime } from '@/lib/utils'
 import { SectionLoader } from '@/components/ui/LoadingSpinner'
 import { Button } from '@/components/ui/Button'
-import type { JobPosting, JobApplication, EmploymentType, ApplicationStatus } from '@/types'
+import type { JobPosting, JobApplication, EmploymentType, ApplicationStatus, JobQuestion, QuestionType } from '@/types'
 
 const EMPLOYMENT_LABELS: Record<EmploymentType, string> = {
   FULL_TIME: 'Full-Time',
@@ -48,6 +49,26 @@ const STATUS_COLORS: Record<ApplicationStatus, string> = {
   REJECTED: 'bg-red-100 text-red-700 border-red-200',
 }
 
+const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
+  SHORT_TEXT: 'Short Answer',
+  LONG_TEXT: 'Long Answer',
+  MULTIPLE_CHOICE: 'Multiple Choice',
+  YES_NO: 'Yes / No',
+  NUMBER: 'Number',
+}
+
+function newQuestion(): JobQuestion {
+  return {
+    id: (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `q_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    label: '',
+    type: 'SHORT_TEXT',
+    required: false,
+    options: [],
+  }
+}
+
 const EMPTY_FORM = {
   title: '',
   department: '',
@@ -56,6 +77,7 @@ const EMPTY_FORM = {
   description: '',
   requirements: '',
   isActive: true,
+  questions: [] as JobQuestion[],
 }
 
 export default function AdminCareersPage() {
@@ -123,8 +145,24 @@ export default function AdminCareersPage() {
       description: job.description,
       requirements: (job.requirements || []).join('\n'),
       isActive: job.isActive,
+      questions: (job.questions || []).map((q) => ({ ...q, options: q.options ? [...q.options] : [] })),
     })
     setShowForm(true)
+  }
+
+  function addQuestion() {
+    setForm((f) => ({ ...f, questions: [...f.questions, newQuestion()] }))
+  }
+
+  function updateQuestion(index: number, patch: Partial<JobQuestion>) {
+    setForm((f) => ({
+      ...f,
+      questions: f.questions.map((q, i) => (i === index ? { ...q, ...patch } : q)),
+    }))
+  }
+
+  function removeQuestion(index: number) {
+    setForm((f) => ({ ...f, questions: f.questions.filter((_, i) => i !== index) }))
   }
 
   async function handleSaveJob(e: React.FormEvent) {
@@ -140,6 +178,14 @@ export default function AdminCareersPage() {
         .map((r) => r.trim())
         .filter(Boolean)
 
+      const questions = form.questions
+        .filter((q) => q.label.trim())
+        .map((q) => ({
+          ...q,
+          label: q.label.trim(),
+          options: q.type === 'MULTIPLE_CHOICE' ? (q.options || []).filter(Boolean) : [],
+        }))
+
       if (editingJob) {
         await updateJobPosting(editingJob.id, {
           title: form.title.trim(),
@@ -148,6 +194,7 @@ export default function AdminCareersPage() {
           location: form.location.trim(),
           description: form.description.trim(),
           requirements,
+          questions,
           isActive: form.isActive,
         })
         toast.success('Job updated')
@@ -159,6 +206,7 @@ export default function AdminCareersPage() {
           location: form.location.trim(),
           description: form.description.trim(),
           requirements,
+          questions,
           isActive: form.isActive,
           sortOrder: jobs.length,
         })
@@ -365,13 +413,18 @@ export default function AdminCareersPage() {
                       </span>
                     </div>
                     <p className="text-sm text-charcoal/50 mt-1">Applied for {app.jobTitle}</p>
-                    <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-4 mt-2 flex-wrap">
                       <a href={`mailto:${app.email}`} className="inline-flex items-center gap-1.5 text-sm text-charcoal/50 hover:text-charcoal transition-colors">
                         <Mail className="w-3.5 h-3.5" /> {app.email}
                       </a>
                       <a href={`tel:${app.phone}`} className="inline-flex items-center gap-1.5 text-sm text-charcoal/50 hover:text-charcoal transition-colors">
                         <Phone className="w-3.5 h-3.5" /> {app.phone}
                       </a>
+                      {app.resumeUrl && (
+                        <a href={app.resumeUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-gold hover:underline">
+                          <FileText className="w-3.5 h-3.5" /> View Resume
+                        </a>
+                      )}
                     </div>
                   </div>
                   <div className="text-right">
@@ -391,6 +444,16 @@ export default function AdminCareersPage() {
                   <p className="mt-3 text-sm text-charcoal/55 italic border-t border-charcoal/8 pt-3">
                     "{app.coverMessage}"
                   </p>
+                )}
+                {app.answers && app.answers.length > 0 && (
+                  <div className={`space-y-2.5 ${app.coverMessage ? 'mt-3 pt-3' : 'mt-3 pt-3 border-t border-charcoal/8'}`}>
+                    {app.answers.map((a, i) => (
+                      <div key={i} className="text-sm">
+                        <p className="text-charcoal/45 text-xs font-medium">{a.label}</p>
+                        <p className="text-charcoal/70">{a.answer || '—'}</p>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             ))
@@ -481,6 +544,84 @@ export default function AdminCareersPage() {
                   rows={4}
                   className="w-full border border-charcoal/20 rounded-sm px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:border-charcoal/50 transition-colors resize-none"
                 />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-medium text-charcoal/60">
+                    Application Questions <span className="text-charcoal/35">(optional)</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addQuestion}
+                    className="flex items-center gap-1 text-xs text-charcoal/60 hover:text-charcoal transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Question
+                  </button>
+                </div>
+
+                {form.questions.length === 0 ? (
+                  <p className="text-xs text-charcoal/35 italic">
+                    No custom questions — applicants will only provide name, email, phone, resume, and a message.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {form.questions.map((q, i) => (
+                      <div key={q.id} className="border border-charcoal/15 rounded-sm p-3 space-y-2.5 bg-charcoal/[0.02]">
+                        <div className="flex items-start gap-2">
+                          <input
+                            type="text"
+                            value={q.label}
+                            onChange={(e) => updateQuestion(i, { label: e.target.value })}
+                            placeholder="Question text, e.g. Are you available weekends?"
+                            className="flex-1 border border-charcoal/20 rounded-sm px-2.5 py-1.5 text-sm text-charcoal focus:outline-none focus:border-charcoal/50 transition-colors"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeQuestion(i)}
+                            className="text-red-400 hover:text-red-600 p-1.5 shrink-0"
+                            aria-label="Remove question"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <select
+                            value={q.type}
+                            onChange={(e) => updateQuestion(i, { type: e.target.value as QuestionType })}
+                            className="text-xs border border-charcoal/20 rounded-sm px-2 py-1.5 text-charcoal/70 focus:outline-none focus:border-charcoal/50"
+                          >
+                            {Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => (
+                              <option key={value} value={value}>{label}</option>
+                            ))}
+                          </select>
+                          <label className="flex items-center gap-1.5 text-xs text-charcoal/60">
+                            <input
+                              type="checkbox"
+                              checked={q.required}
+                              onChange={(e) => updateQuestion(i, { required: e.target.checked })}
+                              className="w-3.5 h-3.5 rounded border-charcoal/30"
+                            />
+                            Required
+                          </label>
+                        </div>
+
+                        {q.type === 'MULTIPLE_CHOICE' && (
+                          <input
+                            type="text"
+                            value={(q.options || []).join(', ')}
+                            onChange={(e) => updateQuestion(i, {
+                              options: e.target.value.split(',').map((s) => s.trim()),
+                            })}
+                            placeholder="Option A, Option B, Option C"
+                            className="w-full border border-charcoal/20 rounded-sm px-2.5 py-1.5 text-sm text-charcoal focus:outline-none focus:border-charcoal/50 transition-colors"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <label className="flex items-center gap-2.5 text-sm text-charcoal/70">

@@ -6,11 +6,21 @@ export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
   try {
-    const { jobId, jobTitle, applicantName, email, phone, coverMessage } = await req.json()
+    const { jobId, jobTitle, applicantName, email, phone, coverMessage, answers, resumeUrl } = await req.json()
 
     if (!jobId || !applicantName?.trim() || !email?.trim() || !phone?.trim()) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
+
+    const cleanAnswers = Array.isArray(answers)
+      ? answers
+          .filter((a) => a && typeof a === 'object' && typeof a.questionId === 'string')
+          .map((a) => ({
+            questionId: String(a.questionId),
+            label: String(a.label ?? ''),
+            answer: String(a.answer ?? ''),
+          }))
+      : []
 
     const token = await getGoogleAccessToken()
     const ref = await fsAdd('jobApplications', {
@@ -20,6 +30,8 @@ export async function POST(req: NextRequest) {
       email: email.trim(),
       phone: phone.trim(),
       coverMessage: coverMessage?.trim() || '',
+      answers: cleanAnswers,
+      resumeUrl: typeof resumeUrl === 'string' ? resumeUrl.trim() : '',
       status: 'NEW',
       createdAt: new Date(),
     }, token)

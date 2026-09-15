@@ -167,6 +167,16 @@ export interface AuditLog {
 
 export type EmploymentType = 'FULL_TIME' | 'PART_TIME' | 'SEASONAL'
 
+export type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'MULTIPLE_CHOICE' | 'YES_NO' | 'NUMBER'
+
+export interface JobQuestion {
+  id: string
+  label: string
+  type: QuestionType
+  required: boolean
+  options?: string[]
+}
+
 export interface JobPosting {
   id: string
   title: string
@@ -175,12 +185,19 @@ export interface JobPosting {
   location: string
   description: string
   requirements: string[]
+  questions: JobQuestion[]
   isActive: boolean
   sortOrder: number
   createdAt: Timestamp | Date | string
 }
 
 export type ApplicationStatus = 'NEW' | 'REVIEWED' | 'CONTACTED' | 'REJECTED'
+
+export interface JobAnswer {
+  questionId: string
+  label: string
+  answer: string
+}
 
 export interface JobApplication {
   id: string
@@ -190,6 +207,8 @@ export interface JobApplication {
   email: string
   phone: string
   coverMessage: string
+  answers: JobAnswer[]
+  resumeUrl?: string
   status: ApplicationStatus
   createdAt: Timestamp | Date | string
 }
