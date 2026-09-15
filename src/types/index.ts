@@ -65,6 +65,7 @@ export interface RestaurantSettings {
   announcementActive: boolean
   seoTitle: string
   seoDescription: string
+  careersPageEnabled: boolean
 }
 
 // ─── Menu ──────────────────────────────────────────────────────────────────────
@@ -160,6 +161,37 @@ export interface AuditLog {
   resource: string
   details?: Record<string, unknown>
   createdAt: Timestamp | Date
+}
+
+// ─── Careers ───────────────────────────────────────────────────────────────────
+
+export type EmploymentType = 'FULL_TIME' | 'PART_TIME' | 'SEASONAL'
+
+export interface JobPosting {
+  id: string
+  title: string
+  department: string
+  employmentType: EmploymentType
+  location: string
+  description: string
+  requirements: string[]
+  isActive: boolean
+  sortOrder: number
+  createdAt: Timestamp | Date | string
+}
+
+export type ApplicationStatus = 'NEW' | 'REVIEWED' | 'CONTACTED' | 'REJECTED'
+
+export interface JobApplication {
+  id: string
+  jobId: string
+  jobTitle: string
+  applicantName: string
+  email: string
+  phone: string
+  coverMessage: string
+  status: ApplicationStatus
+  createdAt: Timestamp | Date | string
 }
 
 // ─── Orders ────────────────────────────────────────────────────────────────────

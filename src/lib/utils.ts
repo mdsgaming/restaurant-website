@@ -110,6 +110,7 @@ export const DEFAULT_SETTINGS = {
   seoTitle: 'Big Treats African Restaurants — Authentic African Cuisine',
   seoDescription:
     'Big Treats African Restaurants serves authentic African cuisine including jollof rice, suya, egusi soup, and more. Order online or visit us today.',
+  careersPageEnabled: true,
 }
 
 export const DAYS_OF_WEEK = [

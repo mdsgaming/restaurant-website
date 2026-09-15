@@ -24,6 +24,8 @@ import type {
   PendingChange,
   AuditLog,
   AppUser,
+  JobPosting,
+  JobApplication,
 } from '@/types'
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
@@ -223,6 +225,59 @@ export async function getAuditLogs(limitCount = 50): Promise<AuditLog[]> {
   )
   const snap = await getDocs(q)
   return snap.docs.slice(0, limitCount).map((d) => ({ id: d.id, ...d.data() } as AuditLog))
+}
+
+// ─── Job Postings ─────────────────────────────────────────────────────────────
+
+export async function getJobPostings(activeOnly = false): Promise<JobPosting[]> {
+  let q
+  if (activeOnly) {
+    q = query(
+      collection(db, 'jobPostings'),
+      where('isActive', '==', true),
+      orderBy('sortOrder')
+    )
+  } else {
+    q = query(collection(db, 'jobPostings'), orderBy('sortOrder'))
+  }
+  const snap = await getDocs(q)
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as JobPosting))
+}
+
+export async function addJobPosting(
+  data: Omit<JobPosting, 'id' | 'createdAt'>
+): Promise<string> {
+  const ref = await addDoc(collection(db, 'jobPostings'), {
+    ...data,
+    createdAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export async function updateJobPosting(
+  id: string,
+  data: Partial<JobPosting>
+): Promise<void> {
+  await updateDoc(doc(db, 'jobPostings', id), data)
+}
+
+export async function deleteJobPosting(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'jobPostings', id))
+}
+
+// ─── Job Applications ─────────────────────────────────────────────────────────
+
+export async function getJobApplications(): Promise<JobApplication[]> {
+  const q = query(collection(db, 'jobApplications'), orderBy('createdAt', 'desc'))
+  const snap = await getDocs(q)
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as JobApplication))
+}
+
+export async function updateJobApplicationStatus(
+  id: string,
+  status: JobApplication['status']
+): Promise<void> {
+  await updateDoc(doc(db, 'jobApplications', id), { status })
 }
 
 // ─── Users ────────────────────────────────────────────────────────────────────

@@ -24,6 +24,7 @@ export function Footer() {
   const phone = settings.phone || DEFAULT_SETTINGS.phone
   const email = settings.email || DEFAULT_SETTINGS.email
   const social = settings.socialMedia
+  const careersEnabled = settings.careersPageEnabled !== false
 
   return (
     <footer className="bg-black text-cream/80">
@@ -125,6 +126,11 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-cream/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-cream/40">
           <p>© {new Date().getFullYear()} {name}. All rights reserved.</p>
           <div className="flex items-center gap-4">
+            {careersEnabled && (
+              <Link href="/careers" className="hover:text-cream/60 transition-colors">
+                Careers
+              </Link>
+            )}
             <a href="https://linktr.ee/Aysmithy.2" target="_blank" rel="noopener noreferrer" className="hover:text-cream/60 transition-colors">
               Contact Developer
             </a>
