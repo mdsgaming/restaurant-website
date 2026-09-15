@@ -53,6 +53,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Careers: public reads active job postings, admins manage them
+    match /jobPostings/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Applications: submitted via server-side REST API (service account,
+    // bypasses these rules). Only admins can read/manage them here.
+    match /jobApplications/{id} {
+      allow read, update: if isAdmin();
+    }
+
     // Staff-only: pending changes
     match /pendingChanges/{id} {
       allow read: if isStaff();
