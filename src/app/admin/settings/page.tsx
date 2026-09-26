@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Save, Globe, Clock, Share2, Megaphone } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getRestaurantSettings, updateRestaurantSettings, addAuditLog } from '@/lib/firestore'
-import { DEFAULT_SETTINGS, DAYS_OF_WEEK } from '@/lib/utils'
+import { DEFAULT_SETTINGS, DAYS_OF_WEEK, extractEmbedUrl } from '@/lib/utils'
 import { ImageUpload } from '@/components/ui/ImageUpload'
 import { Button } from '@/components/ui/Button'
 import type { RestaurantSettings } from '@/types'
@@ -41,7 +41,11 @@ export default function AdminSettingsPage() {
   async function handleSave() {
     setSaving(true)
     try {
-      await updateRestaurantSettings(form)
+      const cleaned = {
+        ...form,
+        mapEmbedUrl: form.mapEmbedUrl ? extractEmbedUrl(form.mapEmbedUrl) : form.mapEmbedUrl,
+      }
+      await updateRestaurantSettings(cleaned)
       await addAuditLog({
         userId: appUser!.uid,
         userName: appUser!.name,

@@ -59,6 +59,18 @@ export function truncate(text: string, maxLength: number): string {
   return text.slice(0, maxLength).trim() + '…'
 }
 
+/**
+ * Google Maps' "Embed a map" panel gives users a full <iframe> tag to copy,
+ * but our field only wants the bare src URL. If someone pastes the whole
+ * tag, extract just the URL so the embed still works.
+ */
+export function extractEmbedUrl(value: string): string {
+  const trimmed = value.trim()
+  const match = trimmed.match(/src="([^"]+)"/)
+  if (match) return match[1].replace(/&amp;/g, '&')
+  return trimmed
+}
+
 export function isValidUrl(url: string): boolean {
   try {
     new URL(url)

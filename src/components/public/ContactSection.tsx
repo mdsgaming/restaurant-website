@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { MapPin, Phone, Mail, Instagram, Facebook, Twitter } from 'lucide-react'
 import { getRestaurantSettings } from '@/lib/firestore'
 import type { RestaurantSettings } from '@/types'
-import { DEFAULT_SETTINGS } from '@/lib/utils'
+import { DEFAULT_SETTINGS, extractEmbedUrl } from '@/lib/utils'
 
 export function ContactSection() {
   const [settings, setSettings] = useState<Partial<RestaurantSettings>>(DEFAULT_SETTINGS)
@@ -15,7 +15,7 @@ export function ContactSection() {
       .catch(() => {})
   }, [])
 
-  const mapUrl = settings?.mapEmbedUrl
+  const mapUrl = settings?.mapEmbedUrl ? extractEmbedUrl(settings.mapEmbedUrl) : settings?.mapEmbedUrl
   const address = `${settings.address || DEFAULT_SETTINGS.address}, ${settings.city || DEFAULT_SETTINGS.city}, ${settings.state || DEFAULT_SETTINGS.state} ${settings.zip || DEFAULT_SETTINGS.zip}`
   const phone = settings.phone || DEFAULT_SETTINGS.phone
   const email = settings.email || DEFAULT_SETTINGS.email
