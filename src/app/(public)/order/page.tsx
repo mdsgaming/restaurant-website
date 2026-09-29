@@ -6,8 +6,9 @@ import { useEffect, useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import type { DeliveryPlatform } from '@/types'
+import Link from 'next/link'
 import { SectionLoader } from '@/components/ui/LoadingSpinner'
-import { ExternalLink, Phone } from 'lucide-react'
+import { ExternalLink, Phone, UtensilsCrossed } from 'lucide-react'
 
 const PLATFORM_META: Record<string, {
   name: string
@@ -84,16 +85,26 @@ export default function OrderPage() {
         ) : active.length === 0 ? (
           <div className="text-center py-16 space-y-4">
             <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center mx-auto">
-              <Phone className="w-8 h-8 text-gold" />
+              <UtensilsCrossed className="w-8 h-8 text-gold" />
             </div>
-            <h2 className="font-serif text-2xl text-cream">Online Ordering Coming Soon</h2>
-            <p className="text-cream/60">Call us to place an order or visit us in person.</p>
-            <a
-              href="tel:+12543506107"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gold text-charcoal font-semibold rounded-sm hover:bg-gold-dark transition-colors"
-            >
-              <Phone className="w-4 h-4" /> Call to Order
-            </a>
+            <h2 className="font-serif text-2xl text-cream">Order Directly From Us</h2>
+            <p className="text-cream/60 max-w-md mx-auto">
+              Browse our menu, add your favorites to your order, and check out right here on the site.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link
+                href="/menu"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gold text-charcoal font-semibold rounded-sm hover:bg-gold-dark transition-colors"
+              >
+                <UtensilsCrossed className="w-4 h-4" /> Browse Menu & Order
+              </Link>
+              <a
+                href="tel:+12543506107"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-cream/30 text-cream font-semibold rounded-sm hover:bg-white/5 transition-colors"
+              >
+                <Phone className="w-4 h-4" /> Call to Order
+              </a>
+            </div>
           </div>
         ) : (
           <>
