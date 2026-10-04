@@ -171,10 +171,12 @@ export default function OrdersPage() {
               type="button"
               onClick={toggleOrdering}
               disabled={togglingOrdering}
-              className={`relative w-11 h-6 rounded-full transition-colors ${orderingEnabled ? 'bg-emerald-500' : 'bg-charcoal/20'} disabled:opacity-50`}
+              aria-pressed={orderingEnabled}
+              aria-label="Toggle online ordering"
+              className={`appearance-none border-0 outline-none p-0 shrink-0 relative w-11 h-6 rounded-full cursor-pointer transition-colors ${orderingEnabled ? 'bg-emerald-500' : 'bg-charcoal/20'} disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <span
-                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${orderingEnabled ? 'translate-x-5' : 'translate-x-0.5'}`}
+                className={`block absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${orderingEnabled ? 'translate-x-5' : 'translate-x-0.5'}`}
               />
             </button>
           </div>

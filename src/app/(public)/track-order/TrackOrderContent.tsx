@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Search, Bell, CheckCircle2, Clock, ChefHat, XCircle } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { formatPrice } from '@/lib/utils'
-import { requestPushToken, canUsePush } from '@/lib/pushNotifications'
+import { requestPushToken, canUsePush, listenForForegroundMessages } from '@/lib/pushNotifications'
 import type { Order, OrderStatus } from '@/types'
 
 const STATUS_STEPS: Array<{ key: OrderStatus; label: string; icon: typeof Clock }> = [
@@ -120,6 +121,25 @@ export function TrackOrderContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [searched, setSearched] = useState(false)
+
+  // Same gap as the admin panel: FCM only auto-shows a notification when
+  // this tab is backgrounded. If someone's watching this page when their
+  // order updates, show it ourselves instead of relying on a silent push.
+  useEffect(() => {
+    if (!canUsePush()) return
+    if (typeof window === 'undefined' || Notification.permission !== 'granted') return
+
+    let unsubscribe: (() => void) | undefined
+    listenForForegroundMessages((payload) => {
+      const title = payload.notification?.title || 'Order Update'
+      const body = payload.notification?.body || ''
+      toast.success(`${title}${body ? ` — ${body}` : ''}`, { duration: 6000, icon: '🔔' })
+      if (searchedPhone) fetchOrders(searchedPhone)
+    }).then((unsub) => { unsubscribe = unsub })
+
+    return () => unsubscribe?.()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchedPhone])
 
   const fetchOrders = useCallback(async (phoneNumber: string) => {
     setLoading(true)

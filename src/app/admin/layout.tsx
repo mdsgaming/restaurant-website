@@ -9,7 +9,7 @@ import { Sidebar } from '@/components/admin/Sidebar'
 import { AdminHeader } from '@/components/admin/AdminHeader'
 import { PageLoader } from '@/components/ui/LoadingSpinner'
 import { getPendingChanges, getRestaurantSettings, saveAdminFcmToken } from '@/lib/firestore'
-import { requestPushToken } from '@/lib/pushNotifications'
+import { requestPushToken, listenForForegroundMessages } from '@/lib/pushNotifications'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { firebaseUser, appUser, loading } = useAuth()
@@ -64,6 +64,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         .catch(() => {})
     }
   }, [appUser])
+
+  // FCM only auto-displays a notification when the tab is backgrounded or
+  // closed (via the service worker). When the admin panel is open and
+  // focused, the message arrives silently unless we show it ourselves.
+  useEffect(() => {
+    if (!appUser) return
+    if (typeof window === 'undefined' || !('Notification' in window)) return
+    if (Notification.permission !== 'granted') return
+
+    let unsubscribe: (() => void) | undefined
+    listenForForegroundMessages((payload) => {
+      const title = payload.notification?.title || 'Big Treats'
+      const body = payload.notification?.body || ''
+      toast.success(`${title}${body ? ` — ${body}` : ''}`, { duration: 6000, icon: '🔔' })
+      try {
+        const n = new Notification(title, { body, icon: '/icon.png' })
+        n.onclick = () => {
+          window.focus()
+          const url = payload.fcmOptions?.link || payload.data?.url
+          if (url) router.push(url)
+        }
+      } catch {
+        // Some browsers block constructing Notification directly while a
+        // service worker is registered — the toast above still covers it.
+      }
+    }).then((unsub) => { unsubscribe = unsub })
+
+    return () => unsubscribe?.()
+  }, [appUser, router])
 
   async function handleEnableNotifications() {
     if (!appUser) return

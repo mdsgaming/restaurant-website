@@ -1,6 +1,6 @@
 'use client'
 
-import { getToken } from 'firebase/messaging'
+import { getToken, onMessage, type MessagePayload } from 'firebase/messaging'
 import { getFcmMessaging } from './firebase'
 
 /**
@@ -34,6 +34,27 @@ export function canUsePush(): boolean {
  * denied permission, or missing VAPID key — callers should treat push as a
  * nice-to-have, never block on it.
  */
+/**
+ * Shows a notification arriving via Firebase's "foreground" channel.
+ *
+ * FCM delivers a push two different ways depending on what the browser is
+ * doing: if the tab is backgrounded/closed, the service worker's
+ * onBackgroundMessage fires and we show a system notification from there.
+ * If the tab is open and focused, the browser does NOT invoke the service
+ * worker at all — the message arrives in-page via this onMessage listener
+ * instead, and nothing is displayed unless the app does it manually. This
+ * is why a notification can work perfectly yet never be seen: whoever's
+ * looking directly at the admin panel when an order comes in gets no
+ * visual cue without this.
+ */
+export async function listenForForegroundMessages(
+  onNotification: (payload: MessagePayload) => void
+): Promise<() => void> {
+  const messaging = await getFcmMessaging()
+  if (!messaging) return () => {}
+  return onMessage(messaging, onNotification)
+}
+
 export async function requestPushToken(): Promise<string | null> {
   try {
     if (typeof window === 'undefined' || !('Notification' in window)) return null
