@@ -1,12 +1,25 @@
 'use client'
 
 import { useState } from 'react'
-import { X, CheckCircle, Upload, FileText, Loader2 } from 'lucide-react'
+import { X, CheckCircle } from 'lucide-react'
 import type { JobPosting } from '@/types'
 
 interface Props {
   job: JobPosting
   onClose: () => void
+}
+
+const INPUT_CLASS =
+  'w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-base sm:text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors'
+
+// Resumes are shared as a link (Google Drive, Dropbox, LinkedIn) instead of
+// uploaded, so the form doesn't depend on file storage.
+function isValidHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 export function JobApplicationModal({ job, onClose }: Props) {
@@ -16,9 +29,6 @@ export function JobApplicationModal({ job, onClose }: Props) {
   const [coverMessage, setCoverMessage] = useState('')
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [resumeUrl, setResumeUrl] = useState('')
-  const [resumeName, setResumeName] = useState('')
-  const [resumeError, setResumeError] = useState('')
-  const [uploadingResume, setUploadingResume] = useState(false)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -29,56 +39,15 @@ export function JobApplicationModal({ job, onClose }: Props) {
     setAnswers((a) => ({ ...a, [questionId]: value }))
   }
 
-  async function handleResumeSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploadingResume(true)
-    setResumeError('')
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-          contentLength: file.size,
-          folder: 'resumes',
-        }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to prepare upload')
-      }
-
-      const { presignedUrl, publicUrl } = await res.json()
-
-      const uploadRes = await fetch(presignedUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
-      })
-      if (!uploadRes.ok) throw new Error('Resume upload failed')
-
-      setResumeUrl(publicUrl)
-      setResumeName(file.name)
-    } catch (err) {
-      setResumeError((err as Error).message || 'Resume upload failed. Please try again.')
-    } finally {
-      setUploadingResume(false)
-      e.target.value = ''
-    }
-  }
-
-  function removeResume() {
-    setResumeUrl('')
-    setResumeName('')
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+
+    const trimmedResume = resumeUrl.trim()
+    if (trimmedResume && !isValidHttpsUrl(trimmedResume)) {
+      setError('Enter a full resume link starting with https://, or leave it blank.')
+      return
+    }
 
     for (const q of questions) {
       if (q.required && !answers[q.id]?.trim()) {
@@ -100,7 +69,7 @@ export function JobApplicationModal({ job, onClose }: Props) {
           email,
           phone,
           coverMessage,
-          resumeUrl,
+          resumeUrl: trimmedResume,
           answers: questions.map((q) => ({
             questionId: q.id,
             label: q.label,
@@ -110,8 +79,8 @@ export function JobApplicationModal({ job, onClose }: Props) {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to submit application')
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to submit application. Please try again.')
       }
 
       setSuccess(true)
@@ -126,7 +95,7 @@ export function JobApplicationModal({ job, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-charcoal border border-cream/10 rounded-sm shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-md bg-charcoal border border-cream/10 rounded-sm shadow-2xl max-h-[90vh] overflow-y-auto overscroll-contain">
         {success ? (
           <div className="p-10 text-center">
             <CheckCircle className="w-14 h-14 text-emerald-400 mx-auto mb-4" />
@@ -142,101 +111,91 @@ export function JobApplicationModal({ job, onClose }: Props) {
                 <h2 className="font-serif text-xl text-cream">Apply Now</h2>
                 <p className="text-xs text-cream/50 mt-0.5">{job.title}</p>
               </div>
-              <button type="button" onClick={onClose} className="text-cream/40 hover:text-cream transition-colors">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="p-2 -m-2 text-cream/40 hover:text-cream transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-cream/60 mb-1.5">Full Name</label>
+                <label htmlFor="apply-name" className="block text-xs font-medium text-cream/60 mb-1.5">Full Name</label>
                 <input
+                  id="apply-name"
                   type="text"
                   required
+                  autoComplete="name"
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="e.g. Jane Doe"
-                  className="w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors"
+                  className={INPUT_CLASS}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-cream/60 mb-1.5">Email</label>
+                <label htmlFor="apply-email" className="block text-xs font-medium text-cream/60 mb-1.5">Email</label>
                 <input
+                  id="apply-email"
                   type="email"
                   required
+                  autoComplete="email"
+                  spellCheck={false}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors"
+                  className={INPUT_CLASS}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-cream/60 mb-1.5">Phone Number</label>
+                <label htmlFor="apply-phone" className="block text-xs font-medium text-cream/60 mb-1.5">Phone Number</label>
                 <input
+                  id="apply-phone"
                   type="tel"
                   required
+                  autoComplete="tel"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  placeholder="e.g. 07700 900000"
-                  className="w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors"
+                  placeholder="e.g. (254) 350-6107"
+                  className={INPUT_CLASS}
                 />
               </div>
 
-              {/* Resume upload */}
               <div>
-                <label className="block text-xs font-medium text-cream/60 mb-1.5">
-                  Resume <span className="text-cream/30">(optional, PDF or Word, max 8MB)</span>
+                <label htmlFor="apply-resume" className="block text-xs font-medium text-cream/60 mb-1.5">
+                  Resume Link <span className="text-cream/30">(optional)</span>
                 </label>
-                {resumeUrl ? (
-                  <div className="flex items-center justify-between gap-3 bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5">
-                    <span className="flex items-center gap-2 text-sm text-cream/80 truncate">
-                      <FileText className="w-4 h-4 text-gold shrink-0" />
-                      <span className="truncate">{resumeName}</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={removeResume}
-                      className="text-cream/40 hover:text-red-400 transition-colors shrink-0"
-                      aria-label="Remove resume"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="flex items-center justify-center gap-2 w-full border border-dashed border-cream/25 rounded-sm px-3 py-3 text-sm text-cream/50 hover:border-gold/50 hover:text-cream/70 transition-colors cursor-pointer">
-                    {uploadingResume ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Uploading…
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4" /> Click to upload your resume
-                        {resumeError && <span className="block w-full text-center text-red-400 text-xs mt-1">{resumeError}</span>}
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                      onChange={handleResumeSelect}
-                      disabled={uploadingResume}
-                      className="hidden"
-                    />
-                  </label>
-                )}
+                <input
+                  id="apply-resume"
+                  type="url"
+                  inputMode="url"
+                  autoComplete="url"
+                  spellCheck={false}
+                  value={resumeUrl}
+                  onChange={e => setResumeUrl(e.target.value)}
+                  placeholder="https://drive.google.com/…"
+                  className={INPUT_CLASS}
+                />
+                <p className="text-xs text-cream/35 mt-1.5">
+                  Paste a link to your resume on Google Drive, Dropbox, or LinkedIn. Make sure the link is set so anyone can view it.
+                </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-cream/60 mb-1.5">
+                <label htmlFor="apply-message" className="block text-xs font-medium text-cream/60 mb-1.5">
                   Why do you want to join us? <span className="text-cream/30">(optional)</span>
                 </label>
                 <textarea
+                  id="apply-message"
                   value={coverMessage}
                   onChange={e => setCoverMessage(e.target.value)}
                   placeholder="Tell us a bit about your experience and availability…"
                   rows={4}
-                  className="w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors resize-none"
+                  className={`${INPUT_CLASS} resize-none`}
                 />
               </div>
 
@@ -245,37 +204,41 @@ export function JobApplicationModal({ job, onClose }: Props) {
                 <div className="space-y-4 pt-2 border-t border-cream/10">
                   {questions.map((q) => (
                     <div key={q.id}>
-                      <label className="block text-xs font-medium text-cream/60 mb-1.5">
+                      <label htmlFor={`q-${q.id}`} className="block text-xs font-medium text-cream/60 mb-1.5">
                         {q.label} {q.required && <span className="text-gold">*</span>}
                       </label>
 
                       {q.type === 'SHORT_TEXT' && (
                         <input
+                          id={`q-${q.id}`}
                           type="text"
                           required={q.required}
                           value={answers[q.id] || ''}
                           onChange={e => setAnswer(q.id, e.target.value)}
-                          className="w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors"
+                          className={INPUT_CLASS}
                         />
                       )}
 
                       {q.type === 'LONG_TEXT' && (
                         <textarea
+                          id={`q-${q.id}`}
                           required={q.required}
                           rows={3}
                           value={answers[q.id] || ''}
                           onChange={e => setAnswer(q.id, e.target.value)}
-                          className="w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors resize-none"
+                          className={`${INPUT_CLASS} resize-none`}
                         />
                       )}
 
                       {q.type === 'NUMBER' && (
                         <input
+                          id={`q-${q.id}`}
                           type="number"
+                          inputMode="numeric"
                           required={q.required}
                           value={answers[q.id] || ''}
                           onChange={e => setAnswer(q.id, e.target.value)}
-                          className="w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors"
+                          className={INPUT_CLASS}
                         />
                       )}
 
@@ -285,8 +248,9 @@ export function JobApplicationModal({ job, onClose }: Props) {
                             <button
                               key={opt}
                               type="button"
+                              aria-pressed={answers[q.id] === opt}
                               onClick={() => setAnswer(q.id, opt)}
-                              className={`py-2 text-sm font-medium rounded-sm border transition-colors ${
+                              className={`py-2.5 text-sm font-medium rounded-sm border transition-colors ${
                                 answers[q.id] === opt
                                   ? 'bg-gold text-charcoal border-gold'
                                   : 'border-cream/20 text-cream/60 hover:border-cream/40 hover:text-cream'
@@ -304,8 +268,9 @@ export function JobApplicationModal({ job, onClose }: Props) {
                             <button
                               key={opt}
                               type="button"
+                              aria-pressed={answers[q.id] === opt}
                               onClick={() => setAnswer(q.id, opt)}
-                              className={`w-full text-left px-3 py-2 text-sm rounded-sm border transition-colors ${
+                              className={`w-full text-left px-3 py-2.5 text-sm rounded-sm border transition-colors ${
                                 answers[q.id] === opt
                                   ? 'bg-gold text-charcoal border-gold'
                                   : 'border-cream/20 text-cream/60 hover:border-cream/40 hover:text-cream'
@@ -321,11 +286,11 @@ export function JobApplicationModal({ job, onClose }: Props) {
                 </div>
               )}
 
-              {error && <p className="text-red-400 text-xs">{error}</p>}
+              {error && <p role="alert" className="text-red-400 text-xs">{error}</p>}
 
               <button
                 type="submit"
-                disabled={loading || uploadingResume}
+                disabled={loading}
                 className="w-full py-3 bg-gold text-charcoal font-bold text-sm rounded-sm hover:bg-gold/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? 'Submitting…' : 'Submit Application'}

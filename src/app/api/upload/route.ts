@@ -5,9 +5,9 @@ import { verifyStaffAuth } from '@/lib/verifyStaffAuth'
 
 export const runtime = 'edge'
 
-// Only resume uploads come from the public job application form. Everything
-// else is staff-only and needs a verified login.
-const PUBLIC_FOLDERS = new Set(['resumes'])
+// Every upload is staff-only. The public job form shares resumes as a link
+// instead of uploading, so no folder accepts anonymous uploads.
+const PUBLIC_FOLDERS = new Set<string>()
 
 export async function POST(req: NextRequest) {
   try {

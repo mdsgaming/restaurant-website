@@ -20,18 +20,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Enter a valid email address' }, { status: 400 })
     }
 
-    // SECURITY: resumeUrl is rendered as a clickable link in the admin
-    // panel — only accept a URL that actually points at our own R2 bucket,
-    // never an arbitrary attacker-supplied string (e.g. a javascript: URI).
-    const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+    // SECURITY: resumeUrl is a link the applicant pastes (Google Drive,
+    // Dropbox, LinkedIn) and is rendered as a clickable link in the admin
+    // panel. Only https: URLs are accepted, which blocks javascript: and
+    // data: URIs that could run code when staff click "View Resume".
     let cleanResumeUrl = ''
     if (typeof resumeUrl === 'string' && resumeUrl.trim()) {
       const candidate = resumeUrl.trim()
-      if (r2PublicUrl && candidate.startsWith(r2PublicUrl)) {
-        cleanResumeUrl = candidate
-      } else {
-        return NextResponse.json({ error: 'Invalid resume upload' }, { status: 400 })
+      let parsed: URL | null = null
+      try {
+        parsed = new URL(candidate)
+      } catch {
+        parsed = null
       }
+      if (!parsed || parsed.protocol !== 'https:' || candidate.length > 500) {
+        return NextResponse.json(
+          { error: 'Enter a full resume link starting with https://, or leave it blank.' },
+          { status: 400 }
+        )
+      }
+      cleanResumeUrl = parsed.toString()
     }
 
     const cleanAnswers = Array.isArray(answers)
