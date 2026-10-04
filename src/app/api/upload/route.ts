@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PutObjectCommand } from '@aws-sdk/client-s3'
 
 export const runtime = 'edge'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { getR2Client, getR2Bucket, getR2PublicUrl, validateUpload } from '@/lib/r2'
+
+import { getPresignedPutUrl } from '@/lib/r2Sign'
+import { getR2Bucket, getR2PublicUrl, validateUpload } from '@/lib/r2'
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,20 +21,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 })
     }
 
+    const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID
+    const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID
+    const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
+    if (!accountId || !accessKeyId || !secretAccessKey) {
+      throw new Error('Missing Cloudflare R2 environment variables')
+    }
+
     const timestamp = Date.now()
     const randomSuffix = Math.random().toString(36).slice(2, 8)
     const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '_')
     const key = `${folder}/${timestamp}_${randomSuffix}_${safeName}`
 
-    const command = new PutObjectCommand({
-      Bucket: getR2Bucket(),
-      Key: key,
-      ContentType: contentType,
-      // ContentLength cannot be set on PutObject presigned URLs in R2 — omit it
-    })
-
     // Presigned URL expires in 5 minutes
-    const presignedUrl = await getSignedUrl(getR2Client(), command, { expiresIn: 300 })
+    const presignedUrl = await getPresignedPutUrl({
+      accountId,
+      accessKeyId,
+      secretAccessKey,
+      bucket: getR2Bucket(),
+      key,
+      expiresIn: 300,
+    })
     const publicUrl = `${getR2PublicUrl()}/${key}`
 
     return NextResponse.json({ presignedUrl, publicUrl, key })

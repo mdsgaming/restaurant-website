@@ -1,35 +1,7 @@
-import { S3Client } from '@aws-sdk/client-s3'
-
-let _r2Client: S3Client | null = null
-
-export function getR2Client(): S3Client {
-  if (!_r2Client) {
-    if (
-      !process.env.CLOUDFLARE_R2_ACCOUNT_ID ||
-      !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ||
-      !process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
-    ) {
-      throw new Error('Missing Cloudflare R2 environment variables')
-    }
-    _r2Client = new S3Client({
-      region: 'auto',
-      endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
-        secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
-      },
-      // Without this, the SDK auto-attaches an x-amz-checksum-crc32 param to
-      // every presigned PutObject URL (computed as if the body were empty,
-      // since it doesn't have the real file yet). The browser's actual PUT
-      // never sends a matching checksum header, so R2 rejects the upload
-      // with SignatureDoesNotMatch — which shows up in the browser as a
-      // CORS-flavored "Failed to fetch". WHEN_REQUIRED only computes
-      // checksums when an operation truly needs one, which PutObject doesn't.
-      requestChecksumCalculation: 'WHEN_REQUIRED',
-    })
-  }
-  return _r2Client
-}
+// NOTE: presigned-URL generation moved to src/lib/r2Sign.ts (hand-rolled
+// SigV4 via Web Crypto). @aws-sdk/s3-request-presigner silently produces
+// an invalid signature when run in Cloudflare's Edge Runtime — see
+// r2Sign.ts for the full explanation.
 
 export function getR2Bucket(): string {
   return process.env.CLOUDFLARE_R2_BUCKET_NAME ?? ''
