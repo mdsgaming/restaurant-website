@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/Badge'
 import type { GalleryItem } from '@/types'
 import toast from 'react-hot-toast'
 import { SectionLoader } from '@/components/ui/LoadingSpinner'
+import { staffAuthHeaders } from '@/lib/authHeaders'
 
 interface UploadItem {
   file: File
@@ -70,7 +71,7 @@ export default function AdminGalleryPage() {
         // 1. Request a presigned URL from our API
         const res = await fetch('/api/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(await staffAuthHeaders()) },
           body: JSON.stringify({
             filename: item.file.name,
             contentType: item.file.type,

@@ -122,6 +122,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (typeof window === 'undefined' || !('Notification' in window)) return
     if (Notification.permission !== 'granted') return
 
+    let cancelled = false
     let unsubscribe: (() => void) | undefined
     listenForForegroundMessages((payload) => {
       const title = payload.notification?.title || 'Big Treats'
@@ -145,9 +146,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // Some browsers block constructing Notification directly while a
         // service worker is registered — the toast above still covers it.
       }
-    }).then((unsub) => { unsubscribe = unsub })
+    }).then((unsub) => {
+      // Effect may have been cleaned up before the subscription resolved;
+      // if so, drop it immediately so listeners never stack up.
+      if (cancelled) unsub()
+      else unsubscribe = unsub
+    })
 
-    return () => unsubscribe?.()
+    return () => {
+      cancelled = true
+      unsubscribe?.()
+    }
   }, [appUser, router])
 
   async function handleEnableNotifications() {

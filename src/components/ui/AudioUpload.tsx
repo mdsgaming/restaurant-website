@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { Upload, X, Music, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { staffAuthHeaders } from '@/lib/authHeaders'
 
 interface AudioUploadProps {
   onUpload: (url: string) => void
@@ -20,7 +21,7 @@ export function AudioUpload({ onUpload, currentUrl, label, folder = 'sounds' }: 
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await staffAuthHeaders()) },
         body: JSON.stringify({
           filename: file.name,
           contentType: file.type,

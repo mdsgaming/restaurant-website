@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { staffAuthHeaders } from '@/lib/authHeaders'
 
 interface ImageUploadProps {
   onUpload: (url: string) => void
@@ -52,7 +53,7 @@ export function ImageUpload({
         // 1. Get presigned URL from our API
         const res = await fetch('/api/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(await staffAuthHeaders()) },
           body: JSON.stringify({
             filename: file.name,
             contentType: file.type,

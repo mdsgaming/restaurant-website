@@ -1,39 +1,22 @@
-// Hand-rolled AWS SigV4 presigned-URL generation using the Web Crypto API.
-//
-// @aws-sdk/s3-request-presigner relies on Node.js-targeted crypto internals
-// that silently compute an incorrect signature when bundled for Cloudflare's
-// Edge Runtime — it doesn't throw, it just produces a presigned URL that R2
-// rejects with SignatureDoesNotMatch. Confirmed by comparing a presigned
-// URL generated in real Node.js (valid, upload succeeds) against the exact
-// same code path running on the deployed Edge function (invalid, every
-// time) with matching credentials. This mirrors why firebase-admin had to
-// be replaced with REST + Web Crypto earlier in this project (see
-// googleAuth.ts) — same root cause, different SDK.
-
-// This TS lib's BufferSource typing wants an ArrayBuffer-backed view
-// specifically, while Uint8Array's own type reports the broader
-// ArrayBufferLike (which also covers SharedArrayBuffer) — a type-checker
-// pedantry mismatch only, not a runtime concern, since every value here is
-// always a plain, freshly allocated ArrayBuffer. Cast once at the boundary
-// rather than scattering casts through every call site.
-function asBufferSource(data: Uint8Array | ArrayBuffer): BufferSource {
-  return data as BufferSource
-}
+// Hand-rolled AWS SigV4 presigned PUT URLs using the Web Crypto API, so it runs
+// on Cloudflare's Edge Runtime. Verified against the real R2 bucket from Node.
+// Content type and content length are signed into the URL when given, so the
+// browser's upload must match what was requested.
 
 async function hmacSha256(key: ArrayBuffer | Uint8Array, data: string): Promise<ArrayBuffer> {
   const keyBytes = new Uint8Array(key)
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
-    asBufferSource(keyBytes),
+    keyBytes as BufferSource,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
   )
-  return crypto.subtle.sign('HMAC', cryptoKey, asBufferSource(new TextEncoder().encode(data)))
+  return crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(data) as BufferSource)
 }
 
 async function sha256Hex(data: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', asBufferSource(new TextEncoder().encode(data)))
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data) as BufferSource)
   return toHex(digest)
 }
 
@@ -46,8 +29,7 @@ function amzDate(d: Date): { date: string; dateTime: string } {
   return { date: iso.slice(0, 8), dateTime: iso }
 }
 
-// AWS's flavor of percent-encoding: RFC 3986 plus encoding '!' '*' "'" '('
-// ')', which encodeURIComponent leaves alone.
+// AWS's percent-encoding: RFC 3986, plus '!' '*' "'" '(' ')' encoded too.
 function awsEncode(str: string): string {
   return encodeURIComponent(str).replace(
     /[!'()*]/g,
@@ -55,18 +37,20 @@ function awsEncode(str: string): string {
   )
 }
 
-interface PresignOptions {
+export interface PresignOptions {
   accountId: string
   accessKeyId: string
   secretAccessKey: string
   bucket: string
   key: string
   expiresIn: number
+  contentType?: string
+  contentLength?: number
 }
 
 /** Generates a presigned S3-compatible PUT URL for Cloudflare R2. */
 export async function getPresignedPutUrl(opts: PresignOptions): Promise<string> {
-  const { accountId, accessKeyId, secretAccessKey, bucket, key, expiresIn } = opts
+  const { accountId, accessKeyId, secretAccessKey, bucket, key, expiresIn, contentType, contentLength } = opts
   const region = 'auto'
   const service = 's3'
   const host = `${bucket}.${accountId}.r2.cloudflarestorage.com`
@@ -75,21 +59,25 @@ export async function getPresignedPutUrl(opts: PresignOptions): Promise<string> 
 
   const canonicalUri = '/' + key.split('/').map(awsEncode).join('/')
 
+  // Headers that are signed. Names must be lowercase and sorted.
+  const headers: Array<[string, string]> = [['host', host]]
+  if (contentType) headers.push(['content-type', contentType])
+  if (contentLength !== undefined) headers.push(['content-length', String(contentLength)])
+  headers.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+  const canonicalHeaders = headers.map(([k, v]) => `${k}:${v}\n`).join('')
+  const signedHeaders = headers.map(([k]) => k).join(';')
+
   const queryParams: Record<string, string> = {
     'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
     'X-Amz-Credential': `${accessKeyId}/${credentialScope}`,
     'X-Amz-Date': dateTime,
     'X-Amz-Expires': String(expiresIn),
-    'X-Amz-SignedHeaders': 'host',
+    'X-Amz-SignedHeaders': signedHeaders,
   }
   const canonicalQueryString = Object.keys(queryParams)
     .sort()
     .map((k) => `${awsEncode(k)}=${awsEncode(queryParams[k])}`)
     .join('&')
-
-  const canonicalHeaders = `host:${host}\n`
-  const signedHeaders = 'host'
-  const payloadHash = 'UNSIGNED-PAYLOAD'
 
   const canonicalRequest = [
     'PUT',
@@ -97,7 +85,7 @@ export async function getPresignedPutUrl(opts: PresignOptions): Promise<string> 
     canonicalQueryString,
     canonicalHeaders,
     signedHeaders,
-    payloadHash,
+    'UNSIGNED-PAYLOAD',
   ].join('\n')
 
   const stringToSign = [

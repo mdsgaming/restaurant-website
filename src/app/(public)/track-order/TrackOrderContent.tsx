@@ -52,7 +52,7 @@ function StatusTimeline({ status }: { status: OrderStatus }) {
   )
 }
 
-function OrderCard({ order }: { order: Order }) {
+function OrderCard({ order, phone }: { order: Order; phone: string }) {
   const [enabling, setEnabling] = useState(false)
   const [enabled, setEnabled] = useState(!!order.notificationToken)
 
@@ -67,7 +67,7 @@ function OrderCard({ order }: { order: Order }) {
       await fetch(`/api/orders/${order.id}/token`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationToken: pushToken }),
+        body: JSON.stringify({ notificationToken: pushToken, customerPhone: phone }),
       })
       setEnabled(true)
     } finally {
@@ -129,15 +129,22 @@ export function TrackOrderContent() {
     if (!canUsePush()) return
     if (typeof window === 'undefined' || Notification.permission !== 'granted') return
 
+    let cancelled = false
     let unsubscribe: (() => void) | undefined
     listenForForegroundMessages((payload) => {
       const title = payload.notification?.title || 'Order Update'
       const body = payload.notification?.body || ''
       toast.success(`${title}${body ? ` — ${body}` : ''}`, { duration: 6000, icon: '🔔' })
       if (searchedPhone) fetchOrders(searchedPhone)
-    }).then((unsub) => { unsubscribe = unsub })
+    }).then((unsub) => {
+      if (cancelled) unsub()
+      else unsubscribe = unsub
+    })
 
-    return () => unsubscribe?.()
+    return () => {
+      cancelled = true
+      unsubscribe?.()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchedPhone])
 
@@ -217,7 +224,7 @@ export function TrackOrderContent() {
 
         <div className="space-y-5">
           {orders.map((order) => (
-            <OrderCard key={order.id} order={order} />
+            <OrderCard key={order.id} order={order} phone={searchedPhone} />
           ))}
         </div>
       </div>

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getPresignedPutUrl } from '@/lib/r2Sign'
+import { getR2Bucket, getR2PublicUrl, validateUpload } from '@/lib/r2'
+import { verifyStaffAuth } from '@/lib/verifyStaffAuth'
 
 export const runtime = 'edge'
 
-import { getPresignedPutUrl } from '@/lib/r2Sign'
-import { getR2Bucket, getR2PublicUrl, validateUpload } from '@/lib/r2'
+// Only resume uploads come from the public job application form. Everything
+// else is staff-only and needs a verified login.
+const PUBLIC_FOLDERS = new Set(['resumes'])
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,7 +20,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const validationError = validateUpload(contentType, contentLength ?? 0, folder)
+    if (!PUBLIC_FOLDERS.has(folder)) {
+      const staff = await verifyStaffAuth(req)
+      if (!staff) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    }
+
+    if (!Number.isInteger(contentLength) || contentLength <= 0) {
+      return NextResponse.json({ error: 'contentLength must be a positive whole number' }, { status: 400 })
+    }
+
+    const validationError = validateUpload(contentType, contentLength, folder)
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 })
     }
@@ -33,7 +48,8 @@ export async function POST(req: NextRequest) {
     const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '_')
     const key = `${folder}/${timestamp}_${randomSuffix}_${safeName}`
 
-    // Presigned URL expires in 5 minutes
+    // Content type and length are signed into the URL, so the browser's PUT
+    // must match them exactly. Expires in 5 minutes.
     const presignedUrl = await getPresignedPutUrl({
       accountId,
       accessKeyId,
@@ -41,6 +57,8 @@ export async function POST(req: NextRequest) {
       bucket: getR2Bucket(),
       key,
       expiresIn: 300,
+      contentType,
+      contentLength,
     })
     const publicUrl = `${getR2PublicUrl()}/${key}`
 
