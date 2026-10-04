@@ -19,6 +19,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [showNotifyBanner, setShowNotifyBanner] = useState(false)
   const [enablingNotify, setEnablingNotify] = useState(false)
   const notificationSoundUrl = useRef<string>('')
+  const soundElRef = useRef<HTMLAudioElement | null>(null)
+  const soundUnlockedRef = useRef(false)
+
+  // Plays the new-order sound. Browsers block audio until the page has had a
+  // user interaction, so failures are surfaced instead of silently swallowed.
+  function playOrderSound() {
+    const el = soundElRef.current
+    if (!el) return
+    el.currentTime = 0
+    el.play().catch(() => {
+      toast.error('The browser blocked the order sound. Click anywhere on this page once to allow it.')
+    })
+  }
 
   useEffect(() => {
     if (!loading) {
@@ -41,8 +54,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     getRestaurantSettings().then((s) => {
       if (s?.logoUrl) setLogoUrl(s.logoUrl)
-      if (s?.orderNotificationSoundUrl) notificationSoundUrl.current = s.orderNotificationSoundUrl
+      if (s?.orderNotificationSoundUrl) {
+        notificationSoundUrl.current = s.orderNotificationSoundUrl
+        const el = new Audio(s.orderNotificationSoundUrl)
+        el.preload = 'auto'
+        soundElRef.current = el
+      }
     }).catch(() => {})
+  }, [])
+
+  // Unlock audio on the first click or tap anywhere in the admin panel, so
+  // later new-order sounds are allowed to play without a user gesture.
+  useEffect(() => {
+    function unlock() {
+      const el = soundElRef.current
+      if (!el || soundUnlockedRef.current) return
+      soundUnlockedRef.current = true
+      el.muted = true
+      el.play()
+        .then(() => { el.pause(); el.currentTime = 0; el.muted = false })
+        .catch(() => { el.muted = false })
+    }
+    window.addEventListener('pointerdown', unlock)
+    return () => window.removeEventListener('pointerdown', unlock)
+  }, [])
+
+  // When the admin tab is open but in the background, the service worker
+  // receives the push and relays it here, so the sound still plays.
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
+    function onSwMessage(e: MessageEvent) {
+      if (e.data?.type === 'FCM_BACKGROUND' && e.data?.data?.orderId) playOrderSound()
+    }
+    navigator.serviceWorker.addEventListener('message', onSwMessage)
+    return () => navigator.serviceWorker.removeEventListener('message', onSwMessage)
   }, [])
 
   useEffect(() => {
@@ -87,13 +132,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       // Browsers block audio.play() without prior user interaction, which
       // the admin has almost certainly already given just by using the
       // panel — but never let a blocked/failed play() break anything else.
-      if (notificationSoundUrl.current) {
-        try {
-          new Audio(notificationSoundUrl.current).play().catch(() => {})
-        } catch {
-          // ignore
-        }
-      }
+      playOrderSound()
 
       try {
         const n = new Notification(title, { body, icon: '/icon.png' })

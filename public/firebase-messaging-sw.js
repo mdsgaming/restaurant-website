@@ -19,10 +19,15 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging()
 
-messaging.onBackgroundMessage((payload) => {
+messaging.onBackgroundMessage(async (payload) => {
   const title = payload.notification?.title || 'Big Treats'
   const body = payload.notification?.body || ''
   const url = payload.fcmOptions?.link || payload.data?.url || '/'
+
+  // Relay to any open admin window so it can play the new-order sound even
+  // when the tab is in the background. Pages decide what to do with it.
+  const openClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+  openClients.forEach((client) => client.postMessage({ type: 'FCM_BACKGROUND', data: payload.data || {} }))
 
   self.registration.showNotification(title, {
     body,
