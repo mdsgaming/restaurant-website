@@ -42,6 +42,13 @@ const ALLOWED_MIME_TYPES = new Set([
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'audio/mpeg',
+  'audio/mp3',
+  'audio/wav',
+  'audio/x-wav',
+  'audio/ogg',
+  'audio/mp4',
+  'audio/x-m4a',
 ])
 
 const MAX_SIZES: Record<string, number> = {
@@ -51,6 +58,7 @@ const MAX_SIZES: Record<string, number> = {
   about: 10 * 1024 * 1024,    // 10 MB
   uploads: 20 * 1024 * 1024,  // 20 MB
   resumes: 8 * 1024 * 1024,   // 8 MB
+  sounds: 8 * 1024 * 1024,    // 8 MB
 }
 
 export function validateUpload(

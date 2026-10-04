@@ -69,6 +69,7 @@ export interface RestaurantSettings {
   careersPageEnabled: boolean
   orderingEnabled: boolean
   categorySortMode: 'MANUAL' | 'ALPHABETICAL'
+  orderNotificationSoundUrl: string
 }
 
 // ─── Menu ──────────────────────────────────────────────────────────────────────

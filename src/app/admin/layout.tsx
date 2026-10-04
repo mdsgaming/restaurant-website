@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, X } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -18,6 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined)
   const [showNotifyBanner, setShowNotifyBanner] = useState(false)
   const [enablingNotify, setEnablingNotify] = useState(false)
+  const notificationSoundUrl = useRef<string>('')
 
   useEffect(() => {
     if (!loading) {
@@ -38,7 +39,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [appUser])
 
   useEffect(() => {
-    getRestaurantSettings().then((s) => { if (s?.logoUrl) setLogoUrl(s.logoUrl) }).catch(() => {})
+    getRestaurantSettings().then((s) => {
+      if (s?.logoUrl) setLogoUrl(s.logoUrl)
+      if (s?.orderNotificationSoundUrl) notificationSoundUrl.current = s.orderNotificationSoundUrl
+    }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -78,6 +82,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const title = payload.notification?.title || 'Big Treats'
       const body = payload.notification?.body || ''
       toast.success(`${title}${body ? ` — ${body}` : ''}`, { duration: 6000, icon: '🔔' })
+
+      // Play the admin's configured new-order sound, if one is set.
+      // Browsers block audio.play() without prior user interaction, which
+      // the admin has almost certainly already given just by using the
+      // panel — but never let a blocked/failed play() break anything else.
+      if (notificationSoundUrl.current) {
+        try {
+          new Audio(notificationSoundUrl.current).play().catch(() => {})
+        } catch {
+          // ignore
+        }
+      }
+
       try {
         const n = new Notification(title, { body, icon: '/icon.png' })
         n.onclick = () => {

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { getRestaurantSettings, updateRestaurantSettings, addAuditLog } from '@/lib/firestore'
 import { DEFAULT_SETTINGS, DAYS_OF_WEEK, extractEmbedUrl } from '@/lib/utils'
 import { ImageUpload } from '@/components/ui/ImageUpload'
+import { AudioUpload } from '@/components/ui/AudioUpload'
 import { Button } from '@/components/ui/Button'
 import type { RestaurantSettings } from '@/types'
 import toast from 'react-hot-toast'
@@ -130,6 +131,18 @@ export default function AdminSettingsPage() {
               <ImageUpload label="Hero Circle Image" onUpload={url => set('heroFeaturedImageUrl', url)} currentUrl={form.heroFeaturedImageUrl} folder="branding" />
               <Field label="Hero Title" value={form.heroTitle || ''} onChange={v => set('heroTitle', v)} placeholder="Your Restaurant Name" />
               <Field label="Hero Subtitle" value={form.heroSubtitle || ''} onChange={v => set('heroSubtitle', v)} placeholder="Your tagline here" />
+            </div>
+
+            <div className="border-t border-gray-100 pt-6 space-y-5">
+              <h3 className="font-semibold text-charcoal text-sm">Order Notifications</h3>
+              <p className="text-xs text-gray-500 -mt-3">
+                Plays in the admin panel when a new order comes in — requires notifications to be enabled (see the banner in the admin panel).
+              </p>
+              <AudioUpload
+                label="New Order Sound"
+                onUpload={url => set('orderNotificationSoundUrl', url)}
+                currentUrl={form.orderNotificationSoundUrl}
+              />
             </div>
 
             <div className="border-t border-gray-100 pt-6 space-y-5">

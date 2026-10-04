@@ -143,6 +143,7 @@ export const DEFAULT_SETTINGS = {
   careersPageEnabled: true,
   orderingEnabled: true,
   categorySortMode: 'MANUAL' as const,
+  orderNotificationSoundUrl: '',
 }
 
 export const DAYS_OF_WEEK = [
