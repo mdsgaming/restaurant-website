@@ -10,7 +10,7 @@ const MAX_MESSAGE_LEN = 2000
 
 export async function POST(req: NextRequest) {
   try {
-    const { jobId, jobTitle, applicantName, email, phone, coverMessage, answers, resumeUrl } = await req.json()
+    const { jobId, jobTitle, applicantName, email, phone, coverMessage, answers } = await req.json()
 
     if (!jobId || !applicantName?.trim() || !email?.trim() || !phone?.trim()) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -18,28 +18,6 @@ export async function POST(req: NextRequest) {
 
     if (!EMAIL_RE.test(email.trim())) {
       return NextResponse.json({ error: 'Enter a valid email address' }, { status: 400 })
-    }
-
-    // SECURITY: resumeUrl is a link the applicant pastes (Google Drive,
-    // Dropbox, LinkedIn) and is rendered as a clickable link in the admin
-    // panel. Only https: URLs are accepted, which blocks javascript: and
-    // data: URIs that could run code when staff click "View Resume".
-    let cleanResumeUrl = ''
-    if (typeof resumeUrl === 'string' && resumeUrl.trim()) {
-      const candidate = resumeUrl.trim()
-      let parsed: URL | null = null
-      try {
-        parsed = new URL(candidate)
-      } catch {
-        parsed = null
-      }
-      if (!parsed || parsed.protocol !== 'https:' || candidate.length > 500) {
-        return NextResponse.json(
-          { error: 'Enter a full resume link starting with https://, or leave it blank.' },
-          { status: 400 }
-        )
-      }
-      cleanResumeUrl = parsed.toString()
     }
 
     const cleanAnswers = Array.isArray(answers)
@@ -62,7 +40,6 @@ export async function POST(req: NextRequest) {
       phone: phone.trim().slice(0, 30),
       coverMessage: (coverMessage?.trim() || '').slice(0, MAX_MESSAGE_LEN),
       answers: cleanAnswers,
-      resumeUrl: cleanResumeUrl,
       status: 'NEW',
       createdAt: new Date(),
     }, token)

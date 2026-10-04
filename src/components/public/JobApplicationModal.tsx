@@ -12,23 +12,12 @@ interface Props {
 const INPUT_CLASS =
   'w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-base sm:text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors'
 
-// Resumes are shared as a link (Google Drive, Dropbox, LinkedIn) instead of
-// uploaded, so the form doesn't depend on file storage.
-function isValidHttpsUrl(value: string): boolean {
-  try {
-    return new URL(value).protocol === 'https:'
-  } catch {
-    return false
-  }
-}
-
 export function JobApplicationModal({ job, onClose }: Props) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [coverMessage, setCoverMessage] = useState('')
   const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [resumeUrl, setResumeUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -42,12 +31,6 @@ export function JobApplicationModal({ job, onClose }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-
-    const trimmedResume = resumeUrl.trim()
-    if (trimmedResume && !isValidHttpsUrl(trimmedResume)) {
-      setError('Enter a full resume link starting with https://, or leave it blank.')
-      return
-    }
 
     for (const q of questions) {
       if (q.required && !answers[q.id]?.trim()) {
@@ -69,7 +52,6 @@ export function JobApplicationModal({ job, onClose }: Props) {
           email,
           phone,
           coverMessage,
-          resumeUrl: trimmedResume,
           answers: questions.map((q) => ({
             questionId: q.id,
             label: q.label,
@@ -163,26 +145,6 @@ export function JobApplicationModal({ job, onClose }: Props) {
                   placeholder="e.g. (254) 350-6107"
                   className={INPUT_CLASS}
                 />
-              </div>
-
-              <div>
-                <label htmlFor="apply-resume" className="block text-xs font-medium text-cream/60 mb-1.5">
-                  Resume Link <span className="text-cream/30">(optional)</span>
-                </label>
-                <input
-                  id="apply-resume"
-                  type="url"
-                  inputMode="url"
-                  autoComplete="url"
-                  spellCheck={false}
-                  value={resumeUrl}
-                  onChange={e => setResumeUrl(e.target.value)}
-                  placeholder="https://drive.google.com/…"
-                  className={INPUT_CLASS}
-                />
-                <p className="text-xs text-cream/35 mt-1.5">
-                  Paste a link to your resume on Google Drive, Dropbox, or LinkedIn. Make sure the link is set so anyone can view it.
-                </p>
               </div>
 
               <div>
