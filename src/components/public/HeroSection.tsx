@@ -25,7 +25,7 @@ export function HeroSection() {
   const featuredImage = settings.heroFeaturedImageUrl || settings.logoUrl
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 hero-bg" />
 

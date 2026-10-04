@@ -48,7 +48,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', className
       />
       <div
         className={cn(
-          'relative w-full bg-white rounded-lg shadow-2xl animate-fade-up',
+          'relative w-full max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-2xl animate-fade-up',
           sizes[size],
           className
         )}

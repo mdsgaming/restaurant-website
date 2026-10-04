@@ -152,7 +152,7 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl text-charcoal">Orders</h1>
           <p className="text-charcoal/55 mt-1 text-sm">
@@ -164,7 +164,7 @@ export default function OrdersPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-3 bg-white border border-charcoal/10 rounded-sm px-4 py-2.5">
             <span className="text-sm text-charcoal/70">Online ordering</span>
             <button

@@ -85,7 +85,7 @@
   }
 
   .admin-card {
-    @apply bg-white rounded-lg border border-gray-100 shadow-sm p-6;
+    @apply bg-white rounded-lg border border-gray-100 shadow-sm p-4 sm:p-6;
   }
 
   .admin-table-th {

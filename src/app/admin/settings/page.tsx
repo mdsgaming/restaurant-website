@@ -88,7 +88,7 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 overflow-x-auto border-b border-gray-200">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -117,7 +117,7 @@ export default function AdminSettingsPage() {
               <Field label="Email" value={form.email || ''} onChange={v => set('email', v)} type="email" placeholder="hello@restaurant.com" />
             </div>
             <Field label="Street Address" value={form.address || ''} onChange={v => set('address', v)} placeholder="123 Main Street" />
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label="City" value={form.city || ''} onChange={v => set('city', v)} />
               <Field label="State" value={form.state || ''} onChange={v => set('state', v)} placeholder="CA" />
               <Field label="ZIP" value={form.zip || ''} onChange={v => set('zip', v)} placeholder="94102" />
@@ -163,7 +163,7 @@ export default function AdminSettingsPage() {
             {DAYS_OF_WEEK.map((day) => {
               const dayHours = form.hours?.[day] ?? { open: '11:00', close: '22:00', closed: false }
               return (
-                <div key={day} className="flex items-center gap-4 py-2 border-b border-gray-50 last:border-0">
+                <div key={day} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-2 border-b border-gray-50 last:border-0">
                   <span className="w-28 text-sm font-medium text-charcoal capitalize">{DAY_LABELS[day]}</span>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input

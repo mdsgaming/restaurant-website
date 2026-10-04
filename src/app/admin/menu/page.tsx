@@ -266,7 +266,7 @@ export default function AdminMenuPage() {
                     <span className="text-xs text-charcoal/40">
                       {items.filter((i) => i.categoryId === cat.id).length}
                     </span>
-                    <div className="hidden group-hover:flex gap-1">
+                    <div className="flex md:hidden md:group-hover:flex gap-1">
                       <button onClick={(e) => { e.stopPropagation(); openEditCategory(cat) }} className="p-1 text-gray-400 hover:text-primary">
                         <Pencil className="w-3 h-3" />
                       </button>
@@ -321,7 +321,7 @@ export default function AdminMenuPage() {
                       <span className={`text-xs px-2 py-0.5 rounded-full ${item.isAvailable ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
                         {item.isAvailable ? 'Available' : 'Off'}
                       </span>
-                      <div className="hidden group-hover:flex gap-1">
+                      <div className="flex md:hidden md:group-hover:flex gap-1">
                         <button onClick={() => openEditItem(item)} className="p-1.5 text-gray-400 hover:text-primary hover:bg-gray-50 rounded">
                           <Pencil className="w-4 h-4" />
                         </button>
