@@ -17,6 +17,7 @@ export function JobApplicationModal({ job, onClose }: Props) {
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [resumeUrl, setResumeUrl] = useState('')
   const [resumeName, setResumeName] = useState('')
+  const [resumeError, setResumeError] = useState('')
   const [uploadingResume, setUploadingResume] = useState(false)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -33,7 +34,7 @@ export function JobApplicationModal({ job, onClose }: Props) {
     if (!file) return
 
     setUploadingResume(true)
-    setError('')
+    setResumeError('')
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -63,7 +64,7 @@ export function JobApplicationModal({ job, onClose }: Props) {
       setResumeUrl(publicUrl)
       setResumeName(file.name)
     } catch (err) {
-      setError((err as Error).message)
+      setResumeError((err as Error).message || 'Resume upload failed. Please try again.')
     } finally {
       setUploadingResume(false)
       e.target.value = ''
@@ -212,6 +213,7 @@ export function JobApplicationModal({ job, onClose }: Props) {
                     ) : (
                       <>
                         <Upload className="w-4 h-4" /> Click to upload your resume
+                        {resumeError && <span className="block w-full text-center text-red-400 text-xs mt-1">{resumeError}</span>}
                       </>
                     )}
                     <input
