@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { MapPin, Phone, Mail, Instagram, Facebook, Twitter } from 'lucide-react'
+import { TikTokIcon } from '@/components/icons/TikTokIcon'
 import { getRestaurantSettings } from '@/lib/firestore'
 import type { RestaurantSettings } from '@/types'
 import { DEFAULT_SETTINGS, extractEmbedUrl } from '@/lib/utils'
@@ -104,7 +105,7 @@ export function ContactSection() {
             </div>
 
             {/* Social links */}
-            {(social?.instagram || social?.facebook || social?.twitter) && (
+            {(social?.instagram || social?.facebook || social?.twitter || social?.tiktok) && (
               <div>
                 <h4 className="font-semibold text-cream mb-4">Follow Us</h4>
                 <div className="flex items-center gap-3">
@@ -124,6 +125,12 @@ export function ContactSection() {
                     <a href={social.twitter} target="_blank" rel="noreferrer" aria-label="Follow us on Twitter"
                       className="w-10 h-10 bg-primary/30 rounded-sm flex items-center justify-center hover:bg-primary text-cream transition-all">
                       <Twitter className="w-5 h-5" aria-hidden="true" />
+                    </a>
+                  )}
+                  {social?.tiktok && (
+                    <a href={social.tiktok} target="_blank" rel="noreferrer" aria-label="Follow us on TikTok"
+                      className="w-10 h-10 bg-primary/30 rounded-sm flex items-center justify-center hover:bg-primary text-cream transition-all">
+                      <TikTokIcon className="w-5 h-5" />
                     </a>
                   )}
                 </div>

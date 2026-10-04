@@ -36,6 +36,7 @@ export interface SocialMedia {
   facebook: string
   instagram: string
   twitter: string
+  tiktok: string
   yelp: string
 }
 

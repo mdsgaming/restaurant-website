@@ -179,6 +179,7 @@ export default function AdminSettingsPage() {
             <Field label="Instagram URL" value={form.socialMedia?.instagram || ''} onChange={v => set('socialMedia', { ...form.socialMedia!, instagram: v })} placeholder="https://instagram.com/yourpage" type="url" />
             <Field label="Facebook URL" value={form.socialMedia?.facebook || ''} onChange={v => set('socialMedia', { ...form.socialMedia!, facebook: v })} placeholder="https://facebook.com/yourpage" type="url" />
             <Field label="Twitter / X URL" value={form.socialMedia?.twitter || ''} onChange={v => set('socialMedia', { ...form.socialMedia!, twitter: v })} placeholder="https://twitter.com/yourpage" type="url" />
+            <Field label="TikTok URL" value={form.socialMedia?.tiktok || ''} onChange={v => set('socialMedia', { ...form.socialMedia!, tiktok: v })} placeholder="https://tiktok.com/@yourpage" type="url" />
             <Field label="Yelp URL" value={form.socialMedia?.yelp || ''} onChange={v => set('socialMedia', { ...form.socialMedia!, yelp: v })} placeholder="https://yelp.com/biz/yourpage" type="url" />
             <div className="border-t border-gray-100 pt-5 space-y-4">
               <h3 className="font-semibold text-sm text-charcoal">SEO</h3>

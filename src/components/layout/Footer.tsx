@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { UtensilsCrossed, Facebook, Instagram, Twitter, MapPin, Phone, Mail } from 'lucide-react'
+import { TikTokIcon } from '@/components/icons/TikTokIcon'
 import { getRestaurantSettings } from '@/lib/firestore'
 import type { RestaurantSettings } from '@/types'
 import { DEFAULT_SETTINGS } from '@/lib/utils'
@@ -65,6 +66,13 @@ export function Footer() {
                   aria-label="Follow us on Twitter"
                   className="w-9 h-9 border border-cream/20 rounded-full flex items-center justify-center hover:border-gold hover:text-gold transition-colors">
                   <Twitter className="w-4 h-4" aria-hidden="true" />
+                </a>
+              )}
+              {social?.tiktok && (
+                <a href={social.tiktok} target="_blank" rel="noreferrer"
+                  aria-label="Follow us on TikTok"
+                  className="w-9 h-9 border border-cream/20 rounded-full flex items-center justify-center hover:border-gold hover:text-gold transition-colors">
+                  <TikTokIcon className="w-4 h-4" />
                 </a>
               )}
             </div>

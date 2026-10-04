@@ -132,6 +132,7 @@ export const DEFAULT_SETTINGS = {
     facebook: '',
     instagram: '',
     twitter: '',
+    tiktok: '',
     yelp: '',
   },
   announcement: '',
