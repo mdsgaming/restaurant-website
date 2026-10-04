@@ -18,6 +18,8 @@ import {
   ClipboardCheck,
   BarChart3,
   ExternalLink,
+  ShoppingBag,
+  Briefcase,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -26,10 +28,12 @@ import toast from 'react-hot-toast'
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
+  { label: 'Orders', href: '/admin/orders', icon: ShoppingBag, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Menu', href: '/admin/menu', icon: MenuIcon, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Gallery', href: '/admin/gallery', icon: Image, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Approvals', href: '/admin/approvals', icon: ClipboardCheck, roles: ['DEVELOPER', 'ADMIN'] },
   { label: 'Delivery', href: '/admin/delivery', icon: Truck, roles: ['DEVELOPER', 'ADMIN'] },
+  { label: 'Careers', href: '/admin/careers', icon: Briefcase, roles: ['DEVELOPER', 'ADMIN'] },
   { label: 'Settings', href: '/admin/settings', icon: Settings, roles: ['DEVELOPER', 'ADMIN'] },
   { label: 'Users', href: '/admin/users', icon: Users, roles: ['DEVELOPER', 'ADMIN'] },
   { label: 'Analytics', href: '/admin/analytics', icon: BarChart3, roles: ['DEVELOPER', 'ADMIN'] },
