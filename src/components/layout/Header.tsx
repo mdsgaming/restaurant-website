@@ -20,7 +20,7 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [restaurantName, setRestaurantName] = useState('Big Treats')
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined)
-  const { count, openCart } = useCart()
+  const { count, openCart, orderingEnabled } = useCart()
 
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 40) }
@@ -78,19 +78,21 @@ export function Header() {
 
             {/* CTA + Mobile toggle */}
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={openCart}
-                className="relative p-2 text-cream/80 hover:text-gold transition-colors"
-                aria-label="Open cart"
-              >
-                <ShoppingBag className="w-5 h-5" />
-                {count > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-gold text-charcoal text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
-                    {count > 9 ? '9+' : count}
-                  </span>
-                )}
-              </button>
+              {orderingEnabled && (
+                <button
+                  type="button"
+                  onClick={openCart}
+                  className="relative p-2 text-cream/80 hover:text-gold transition-colors"
+                  aria-label="Open cart"
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  {count > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-gold text-charcoal text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+                      {count > 9 ? '9+' : count}
+                    </span>
+                  )}
+                </button>
+              )}
               <Link
                 href="/order"
                 className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-gold text-charcoal font-semibold text-sm rounded-sm hover:bg-gold-dark transition-colors"

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ShoppingBag, RefreshCw, Phone } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatPrice } from '@/lib/utils'
+import { getRestaurantSettings, updateRestaurantSettings } from '@/lib/firestore'
 import type { OrderStatus, OrderType } from '@/types'
 
 interface OrderItem {
@@ -61,6 +62,26 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<OrderStatus | 'ALL'>('ALL')
   const [updating, setUpdating] = useState<string | null>(null)
+  const [orderingEnabled, setOrderingEnabled] = useState(true)
+  const [togglingOrdering, setTogglingOrdering] = useState(false)
+
+  useEffect(() => {
+    getRestaurantSettings().then((s) => setOrderingEnabled(s?.orderingEnabled !== false)).catch(() => {})
+  }, [])
+
+  async function toggleOrdering() {
+    setTogglingOrdering(true)
+    const next = !orderingEnabled
+    try {
+      await updateRestaurantSettings({ orderingEnabled: next })
+      setOrderingEnabled(next)
+      toast.success(next ? 'Online ordering enabled' : 'Online ordering disabled — site now shows "please call"')
+    } catch {
+      toast.error('Failed to update')
+    } finally {
+      setTogglingOrdering(false)
+    }
+  }
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -117,15 +138,36 @@ export default function OrdersPage() {
             )}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => { setLoading(true); fetchOrders() }}
-          className="flex items-center gap-2 px-4 py-2 text-sm border border-charcoal/20 rounded-sm hover:bg-charcoal/5 transition-colors text-charcoal/70"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 bg-white border border-charcoal/10 rounded-sm px-4 py-2.5">
+            <span className="text-sm text-charcoal/70">Online ordering</span>
+            <button
+              type="button"
+              onClick={toggleOrdering}
+              disabled={togglingOrdering}
+              className={`relative w-11 h-6 rounded-full transition-colors ${orderingEnabled ? 'bg-emerald-500' : 'bg-charcoal/20'} disabled:opacity-50`}
+            >
+              <span
+                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${orderingEnabled ? 'translate-x-5' : 'translate-x-0.5'}`}
+              />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setLoading(true); fetchOrders() }}
+            className="flex items-center gap-2 px-4 py-2 text-sm border border-charcoal/20 rounded-sm hover:bg-charcoal/5 transition-colors text-charcoal/70"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
       </div>
+
+      {!orderingEnabled && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-sm px-4 py-3">
+          Online ordering is currently off. The cart and "Add to Order" buttons are hidden sitewide, and customers see a "please call" message instead.
+        </div>
+      )}
 
       {/* Filter tabs */}
       <div className="flex gap-2 flex-wrap">

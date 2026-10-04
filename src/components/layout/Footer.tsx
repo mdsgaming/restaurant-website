@@ -79,6 +79,7 @@ export function Footer() {
                 { label: 'Menu', href: '/menu' },
                 { label: 'Gallery', href: '/gallery' },
                 { label: 'Order Now', href: '/order' },
+                { label: 'Track Your Order', href: '/track-order' },
                 { label: 'About Us', href: '/#about' },
                 { label: 'Contact', href: '/#contact' },
               ].map((link) => (

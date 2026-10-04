@@ -14,8 +14,10 @@ import {
   deleteMenuItem,
   addAuditLog,
   submitPendingChange,
+  getRestaurantSettings,
+  updateRestaurantSettings,
 } from '@/lib/firestore'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, sortCategories } from '@/lib/utils'
 import { ConfirmModal, Modal } from '@/components/ui/Modal'
 import { ImageUpload } from '@/components/ui/ImageUpload'
 import { Button } from '@/components/ui/Button'
@@ -30,6 +32,8 @@ export default function AdminMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([])
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [categorySortMode, setCategorySortMode] = useState<'MANUAL' | 'ALPHABETICAL'>('MANUAL')
+  const [savingSortMode, setSavingSortMode] = useState(false)
 
   // Modals
   const [categoryModal, setCategoryModal] = useState(false)
@@ -54,9 +58,10 @@ export default function AdminMenuPage() {
 
   async function load() {
     try {
-      const [cats, its] = await Promise.all([getMenuCategories(), getMenuItems()])
+      const [cats, its, settings] = await Promise.all([getMenuCategories(), getMenuItems(), getRestaurantSettings()])
       setCategories(cats)
       setItems(its)
+      if (settings?.categorySortMode) setCategorySortMode(settings.categorySortMode)
       if (!activeCategory && cats.length > 0) setActiveCategory(cats[0].id)
     } catch (e) {
       console.error(e)
@@ -66,6 +71,22 @@ export default function AdminMenuPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  async function changeSortMode(mode: 'MANUAL' | 'ALPHABETICAL') {
+    if (mode === categorySortMode) return
+    setSavingSortMode(true)
+    try {
+      await updateRestaurantSettings({ categorySortMode: mode })
+      setCategorySortMode(mode)
+      toast.success(mode === 'ALPHABETICAL' ? 'Categories now sort A–Z on the site' : 'Categories now use your manual order')
+    } catch {
+      toast.error('Failed to update sort order')
+    } finally {
+      setSavingSortMode(false)
+    }
+  }
+
+  const sortedCategories = sortCategories(categories, categorySortMode)
 
   function openNewCategory() {
     setEditingCategory(null)
@@ -204,14 +225,36 @@ export default function AdminMenuPage() {
           {/* Categories column */}
           <div className="lg:col-span-1">
             <div className="admin-card">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <h2 className="font-semibold text-charcoal text-sm">Categories</h2>
                 <Button size="sm" onClick={openNewCategory}>
                   <Plus className="w-3.5 h-3.5" /> Add
                 </Button>
               </div>
+              <div className="flex items-center gap-1 mb-4 bg-gray-50 rounded-sm p-1">
+                <button
+                  type="button"
+                  onClick={() => changeSortMode('MANUAL')}
+                  disabled={savingSortMode}
+                  className={`flex-1 text-xs font-medium py-1.5 rounded-sm transition-colors ${
+                    categorySortMode === 'MANUAL' ? 'bg-white text-charcoal shadow-sm' : 'text-charcoal/50 hover:text-charcoal'
+                  }`}
+                >
+                  Manual Order
+                </button>
+                <button
+                  type="button"
+                  onClick={() => changeSortMode('ALPHABETICAL')}
+                  disabled={savingSortMode}
+                  className={`flex-1 text-xs font-medium py-1.5 rounded-sm transition-colors ${
+                    categorySortMode === 'ALPHABETICAL' ? 'bg-white text-charcoal shadow-sm' : 'text-charcoal/50 hover:text-charcoal'
+                  }`}
+                >
+                  A–Z Automatic
+                </button>
+              </div>
               <div className="space-y-1">
-                {categories.map((cat) => (
+                {sortedCategories.map((cat) => (
                   <div
                     key={cat.id}
                     className={`group flex items-center gap-2 px-3 py-2 rounded-sm cursor-pointer transition-colors ${

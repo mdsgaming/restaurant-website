@@ -66,6 +66,8 @@ export interface RestaurantSettings {
   seoTitle: string
   seoDescription: string
   careersPageEnabled: boolean
+  orderingEnabled: boolean
+  categorySortMode: 'MANUAL' | 'ALPHABETICAL'
 }
 
 // ─── Menu ──────────────────────────────────────────────────────────────────────
@@ -236,11 +238,13 @@ export interface Order {
   id: string
   customerName: string
   customerPhone: string
+  customerPhoneDigits: string
   orderType: OrderType
   items: OrderItem[]
   notes?: string
   status: OrderStatus
   total: number
+  notificationToken?: string
   createdAt: string | Timestamp | Date
   updatedAt: string | Timestamp | Date
 }

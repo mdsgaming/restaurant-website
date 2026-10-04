@@ -81,6 +81,14 @@ service cloud.firestore {
       allow create: if isStaff();
     }
 
+    // Admin/staff push notification tokens — each user manages only their
+    // own token doc. Reading all tokens (to notify staff of a new order)
+    // happens server-side via the service account, which bypasses these
+    // rules entirely.
+    match /adminFcmTokens/{uid} {
+      allow read, write: if isStaff() && request.auth.uid == uid;
+    }
+
     // User profiles
     match /users/{uid} {
       // Users can read their own profile, admins can read all

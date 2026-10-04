@@ -280,6 +280,16 @@ export async function updateJobApplicationStatus(
   await updateDoc(doc(db, 'jobApplications', id), { status })
 }
 
+// ─── Admin Push Notification Tokens ───────────────────────────────────────────
+
+export async function saveAdminFcmToken(uid: string, token: string): Promise<void> {
+  await setDoc(doc(db, 'adminFcmTokens', uid), { token, updatedAt: serverTimestamp() })
+}
+
+export async function removeAdminFcmToken(uid: string): Promise<void> {
+  await deleteDoc(doc(db, 'adminFcmTokens', uid))
+}
+
 // ─── Users ────────────────────────────────────────────────────────────────────
 
 export async function getUserProfile(uid: string): Promise<AppUser | null> {

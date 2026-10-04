@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { X, CheckCircle } from 'lucide-react'
+import Link from 'next/link'
+import { X, CheckCircle, Bell } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { formatPrice } from '@/lib/utils'
+import { requestPushToken } from '@/lib/pushNotifications'
 import type { OrderType } from '@/types'
 
 interface Props {
@@ -16,6 +18,7 @@ export function CheckoutModal({ onClose }: Props) {
   const [phone, setPhone] = useState('')
   const [orderType, setOrderType] = useState<OrderType>('TAKEOUT')
   const [notes, setNotes] = useState('')
+  const [notifyMe, setNotifyMe] = useState(true)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -26,6 +29,10 @@ export function CheckoutModal({ onClose }: Props) {
     setLoading(true)
 
     try {
+      // Best-effort — if the browser denies/doesn't support push, the order
+      // still goes through fine without it.
+      const notificationToken = notifyMe ? await requestPushToken() : null
+
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,6 +42,7 @@ export function CheckoutModal({ onClose }: Props) {
           orderType,
           notes,
           total,
+          notificationToken,
           items: items.map(i => ({
             itemId: i.id,
             name: i.name,
@@ -68,6 +76,9 @@ export function CheckoutModal({ onClose }: Props) {
             <CheckCircle className="w-14 h-14 text-emerald-400 mx-auto mb-4" />
             <h2 className="font-serif text-2xl text-cream mb-2">Order Placed!</h2>
             <p className="text-cream/60 text-sm">We've received your order and will start preparing it shortly.</p>
+            <Link href="/track-order" className="inline-block mt-4 text-xs text-gold hover:underline">
+              Track your order status →
+            </Link>
           </div>
         ) : (
           <>
@@ -133,6 +144,19 @@ export function CheckoutModal({ onClose }: Props) {
                   className="w-full bg-white/5 border border-cream/20 rounded-sm px-3 py-2.5 text-sm text-cream placeholder-cream/30 focus:outline-none focus:border-gold transition-colors resize-none"
                 />
               </div>
+
+              <label className="flex items-start gap-2.5 text-sm text-cream/60 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notifyMe}
+                  onChange={e => setNotifyMe(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 rounded border-cream/30"
+                />
+                <span className="flex items-center gap-1.5">
+                  <Bell className="w-3.5 h-3.5 text-gold shrink-0" />
+                  Notify my phone when my order is ready
+                </span>
+              </label>
 
               <div className="pt-1 border-t border-cream/10">
                 <div className="flex items-center justify-between text-sm mb-4">

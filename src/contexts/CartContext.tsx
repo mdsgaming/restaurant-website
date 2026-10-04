@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { getRestaurantSettings } from '@/lib/firestore'
 import type { MenuItem, CartItem } from '@/types'
 
 interface CartContextType {
@@ -14,6 +15,7 @@ interface CartContextType {
   isOpen: boolean
   openCart: () => void
   closeCart: () => void
+  orderingEnabled: boolean
 }
 
 const CartContext = createContext<CartContextType | null>(null)
@@ -21,12 +23,19 @@ const CartContext = createContext<CartContextType | null>(null)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
+  const [orderingEnabled, setOrderingEnabled] = useState(true)
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('cart')
       if (saved) setItems(JSON.parse(saved))
     } catch {}
+  }, [])
+
+  useEffect(() => {
+    getRestaurantSettings()
+      .then((s) => setOrderingEnabled(s?.orderingEnabled !== false))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -64,7 +73,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const count = items.reduce((sum, i) => sum + i.quantity, 0)
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, count, isOpen, openCart, closeCart }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, count, isOpen, openCart, closeCart, orderingEnabled }}>
       {children}
     </CartContext.Provider>
   )

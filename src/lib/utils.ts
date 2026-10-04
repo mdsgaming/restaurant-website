@@ -71,6 +71,23 @@ export function extractEmbedUrl(value: string): string {
   return trimmed
 }
 
+/** Sorts menu categories either by their manual sortOrder or alphabetically by name. */
+export function sortCategories<T extends { name: string; sortOrder: number }>(
+  categories: T[],
+  mode: 'MANUAL' | 'ALPHABETICAL' = 'MANUAL'
+): T[] {
+  const copy = [...categories]
+  if (mode === 'ALPHABETICAL') {
+    return copy.sort((a, b) => a.name.localeCompare(b.name))
+  }
+  return copy.sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+/** Strips a phone number down to digits only, for consistent lookup/matching. */
+export function normalizePhone(phone: string): string {
+  return (phone || '').replace(/\D/g, '')
+}
+
 export function isValidUrl(url: string): boolean {
   try {
     new URL(url)
@@ -123,6 +140,8 @@ export const DEFAULT_SETTINGS = {
   seoDescription:
     'Big Treats African Restaurants serves authentic African cuisine including jollof rice, suya, egusi soup, and more. Order online or visit us today.',
   careersPageEnabled: true,
+  orderingEnabled: true,
+  categorySortMode: 'MANUAL' as const,
 }
 
 export const DAYS_OF_WEEK = [

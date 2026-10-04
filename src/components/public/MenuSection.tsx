@@ -2,17 +2,18 @@
 
 import Link from 'next/link'
 import { Flame, Leaf, ArrowRight, Plus } from 'lucide-react'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, sortCategories } from '@/lib/utils'
 import { useCart } from '@/contexts/CartContext'
 import type { MenuCategory, MenuItem } from '@/types'
 
 interface MenuSectionProps {
   categories: MenuCategory[]
   items: MenuItem[]
+  categorySortMode?: 'MANUAL' | 'ALPHABETICAL'
 }
 
-export function MenuSection({ categories, items }: MenuSectionProps) {
-  const activeCategories = categories.filter((c) => c.isActive).slice(0, 4)
+export function MenuSection({ categories, items, categorySortMode = 'MANUAL' }: MenuSectionProps) {
+  const activeCategories = sortCategories(categories.filter((c) => c.isActive), categorySortMode).slice(0, 4)
   const featuredItems = items.filter((i) => i.isFeatured && i.isAvailable).slice(0, 8)
   const displayItems = featuredItems.length > 0 ? featuredItems : items.filter(i => i.isAvailable).slice(0, 8)
 
@@ -67,7 +68,7 @@ export function MenuSection({ categories, items }: MenuSectionProps) {
 }
 
 function MenuCard({ item }: { item: MenuItem }) {
-  const { addItem } = useCart()
+  const { addItem, orderingEnabled } = useCart()
 
   return (
     <div className="group overflow-hidden rounded-sm border border-cream/10 bg-white/5 hover:bg-white/10 transition-all duration-200">
@@ -105,14 +106,16 @@ function MenuCard({ item }: { item: MenuItem }) {
         {item.description && (
           <p className="text-xs text-cream/55 mt-1.5 leading-relaxed line-clamp-2">{item.description}</p>
         )}
-        <button
-          type="button"
-          onClick={() => addItem(item)}
-          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 border border-cream/20 text-cream/70 text-xs font-medium rounded-sm hover:bg-gold hover:text-charcoal hover:border-gold transition-all duration-200"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add to Order
-        </button>
+        {orderingEnabled && (
+          <button
+            type="button"
+            onClick={() => addItem(item)}
+            className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 border border-cream/20 text-cream/70 text-xs font-medium rounded-sm hover:bg-gold hover:text-charcoal hover:border-gold transition-all duration-200"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add to Order
+          </button>
+        )}
       </div>
     </div>
   )

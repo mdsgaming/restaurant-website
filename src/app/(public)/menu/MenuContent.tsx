@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { collection, query, orderBy, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { Flame, Leaf, ShieldCheck, Plus } from 'lucide-react'
-import { formatPrice } from '@/lib/utils'
+import { Flame, Leaf, ShieldCheck, Plus, PhoneCall } from 'lucide-react'
+import { formatPrice, sortCategories } from '@/lib/utils'
+import { getRestaurantSettings } from '@/lib/firestore'
 import { SectionLoader } from '@/components/ui/LoadingSpinner'
 import { useCart } from '@/contexts/CartContext'
 import type { MenuItem, MenuCategory } from '@/types'
@@ -12,17 +13,21 @@ import type { MenuItem, MenuCategory } from '@/types'
 export function MenuContent() {
   const [categories, setCategories] = useState<MenuCategory[]>([])
   const [items, setItems] = useState<MenuItem[]>([])
+  const [categorySortMode, setCategorySortMode] = useState<'MANUAL' | 'ALPHABETICAL'>('MANUAL')
   const [loading, setLoading] = useState(true)
+  const { orderingEnabled } = useCart()
 
   useEffect(() => {
     async function load() {
       try {
-        const [catSnap, itemSnap] = await Promise.all([
+        const [catSnap, itemSnap, settings] = await Promise.all([
           getDocs(query(collection(db, 'menuCategories'), orderBy('sortOrder'))),
           getDocs(query(collection(db, 'menuItems'), orderBy('sortOrder'))),
+          getRestaurantSettings(),
         ])
         setCategories(catSnap.docs.map((d) => ({ id: d.id, ...d.data() } as MenuCategory)))
         setItems(itemSnap.docs.map((d) => ({ id: d.id, ...d.data() } as MenuItem)))
+        if (settings?.categorySortMode) setCategorySortMode(settings.categorySortMode)
       } catch (e) {
         console.error('Failed to load menu:', e)
       } finally {
@@ -32,7 +37,7 @@ export function MenuContent() {
     load()
   }, [])
 
-  const activeCategories = categories.filter((c) => c.isActive)
+  const activeCategories = sortCategories(categories.filter((c) => c.isActive), categorySortMode)
 
   if (loading) {
     return <div className="py-20"><SectionLoader /></div>
@@ -40,6 +45,14 @@ export function MenuContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {!orderingEnabled && (
+        <div className="mb-10 flex items-center gap-3 bg-gold/10 border border-gold/30 rounded-sm px-5 py-4">
+          <PhoneCall className="w-5 h-5 text-gold shrink-0" />
+          <p className="text-sm text-cream/80">
+            Online ordering is temporarily unavailable. Please call us to place your order.
+          </p>
+        </div>
+      )}
       {activeCategories.length === 0 ? (
         <div className="text-center py-20">
           <p className="font-serif text-2xl text-cream/30 italic">Menu coming soon</p>
@@ -79,7 +92,7 @@ function CategorySection({ category, items }: { category: MenuCategory; items: M
 }
 
 function MenuItemRow({ item }: { item: MenuItem }) {
-  const { addItem } = useCart()
+  const { addItem, orderingEnabled } = useCart()
 
   return (
     <div className="flex gap-4 p-4 bg-white/5 rounded-sm border border-cream/10 hover:border-cream/20 hover:bg-white/10 transition-all">
@@ -105,14 +118,16 @@ function MenuItemRow({ item }: { item: MenuItem }) {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <span className="text-gold font-bold whitespace-nowrap">{formatPrice(item.price)}</span>
-            <button
-              type="button"
-              onClick={() => addItem(item)}
-              className="w-8 h-8 flex items-center justify-center bg-gold/10 border border-gold/30 text-gold rounded-sm hover:bg-gold hover:text-charcoal transition-all duration-200"
-              aria-label={`Add ${item.name} to order`}
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+            {orderingEnabled && (
+              <button
+                type="button"
+                onClick={() => addItem(item)}
+                className="w-8 h-8 flex items-center justify-center bg-gold/10 border border-gold/30 text-gold rounded-sm hover:bg-gold hover:text-charcoal transition-all duration-200"
+                aria-label={`Add ${item.name} to order`}
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
         {item.description && (
