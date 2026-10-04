@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, X } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { Sidebar } from '@/components/admin/Sidebar'
 import { AdminHeader } from '@/components/admin/AdminHeader'
@@ -43,9 +44,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!appUser) return
     if (typeof window === 'undefined' || !('Notification' in window)) return
+
     if (Notification.permission === 'default') {
       const dismissed = localStorage.getItem('admin-notify-dismissed')
       if (!dismissed) setShowNotifyBanner(true)
+      return
+    }
+
+    // Permission was already granted in a past visit — silently (re)save a
+    // fresh token. This self-heals the case where permission was granted
+    // before the VAPID key was configured (or the token save otherwise
+    // failed), so a stuck admin doesn't need to find a way to re-trigger
+    // the banner manually.
+    if (Notification.permission === 'granted') {
+      requestPushToken()
+        .then((pushToken) => {
+          if (pushToken) saveAdminFcmToken(appUser.uid, pushToken).catch(() => {})
+        })
+        .catch(() => {})
     }
   }, [appUser])
 
@@ -56,10 +72,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const pushToken = await requestPushToken()
       if (pushToken) {
         await saveAdminFcmToken(appUser.uid, pushToken)
+        setShowNotifyBanner(false)
+        toast.success('Notifications enabled')
+      } else {
+        toast.error('Could not enable notifications — check that notifications are allowed for this site in your browser, then try again.')
       }
+    } catch {
+      toast.error('Could not enable notifications. Please try again.')
     } finally {
       setEnablingNotify(false)
-      setShowNotifyBanner(false)
     }
   }
 
