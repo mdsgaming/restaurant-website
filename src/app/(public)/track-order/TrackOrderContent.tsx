@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Search, Bell, CheckCircle2, Clock, ChefHat, XCircle } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
-import { requestPushToken } from '@/lib/pushNotifications'
+import { requestPushToken, canUsePush } from '@/lib/pushNotifications'
 import type { Order, OrderStatus } from '@/types'
 
 const STATUS_STEPS: Array<{ key: OrderStatus; label: string; icon: typeof Clock }> = [
@@ -90,7 +90,7 @@ function OrderCard({ order }: { order: Order }) {
 
       <StatusTimeline status={order.status} />
 
-      {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && (
+      {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && canUsePush() && (
         <div className="mt-6 pt-5 border-t border-cream/10">
           {enabled ? (
             <p className="flex items-center gap-2 text-xs text-emerald-400">

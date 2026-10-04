@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { X, CheckCircle, Bell } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { formatPrice } from '@/lib/utils'
-import { requestPushToken } from '@/lib/pushNotifications'
+import { requestPushToken, canUsePush } from '@/lib/pushNotifications'
 import type { OrderType } from '@/types'
 
 interface Props {
@@ -19,6 +19,11 @@ export function CheckoutModal({ onClose }: Props) {
   const [orderType, setOrderType] = useState<OrderType>('TAKEOUT')
   const [notes, setNotes] = useState('')
   const [notifyMe, setNotifyMe] = useState(true)
+  const [pushAvailable, setPushAvailable] = useState(false)
+
+  useEffect(() => {
+    setPushAvailable(canUsePush())
+  }, [])
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -31,7 +36,7 @@ export function CheckoutModal({ onClose }: Props) {
     try {
       // Best-effort — if the browser denies/doesn't support push, the order
       // still goes through fine without it.
-      const notificationToken = notifyMe ? await requestPushToken() : null
+      const notificationToken = notifyMe && pushAvailable ? await requestPushToken() : null
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -145,18 +150,26 @@ export function CheckoutModal({ onClose }: Props) {
                 />
               </div>
 
-              <label className="flex items-start gap-2.5 text-sm text-cream/60 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notifyMe}
-                  onChange={e => setNotifyMe(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 rounded border-cream/30"
-                />
-                <span className="flex items-center gap-1.5">
-                  <Bell className="w-3.5 h-3.5 text-gold shrink-0" />
-                  Notify my phone when my order is ready
-                </span>
-              </label>
+              {pushAvailable ? (
+                <label className="flex items-start gap-2.5 text-sm text-cream/60 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={notifyMe}
+                    onChange={e => setNotifyMe(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 rounded border-cream/30"
+                  />
+                  <span className="flex items-center gap-1.5">
+                    <Bell className="w-3.5 h-3.5 text-gold shrink-0" />
+                    Notify my phone when my order is ready
+                  </span>
+                </label>
+              ) : (
+                <p className="flex items-center gap-1.5 text-xs text-cream/40">
+                  <Bell className="w-3.5 h-3.5 shrink-0" />
+                  You can check your order status anytime at{' '}
+                  <Link href="/track-order" className="text-gold hover:underline">Track Your Order</Link>
+                </p>
+              )}
 
               <div className="pt-1 border-t border-cream/10">
                 <div className="flex items-center justify-between text-sm mb-4">
