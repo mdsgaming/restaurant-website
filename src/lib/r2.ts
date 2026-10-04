@@ -18,6 +18,14 @@ export function getR2Client(): S3Client {
         accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
         secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
       },
+      // Without this, the SDK auto-attaches an x-amz-checksum-crc32 param to
+      // every presigned PutObject URL (computed as if the body were empty,
+      // since it doesn't have the real file yet). The browser's actual PUT
+      // never sends a matching checksum header, so R2 rejects the upload
+      // with SignatureDoesNotMatch — which shows up in the browser as a
+      // CORS-flavored "Failed to fetch". WHEN_REQUIRED only computes
+      // checksums when an operation truly needs one, which PutObject doesn't.
+      requestChecksumCalculation: 'WHEN_REQUIRED',
     })
   }
   return _r2Client
