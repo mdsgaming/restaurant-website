@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fsUpdate, fsGet } from '@/lib/firestoreRest'
 import { getGoogleAccessToken } from '@/lib/googleAuth'
 import { sendFcmMessage } from '@/lib/fcm'
+import { verifyStaffAuth } from '@/lib/verifyStaffAuth'
 
 export const runtime = 'edge'
 
@@ -18,6 +19,11 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const staff = await verifyStaffAuth(req)
+  if (!staff) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const { status } = await req.json()
 

@@ -5,6 +5,7 @@ import { ShoppingBag, RefreshCw, Phone } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatPrice } from '@/lib/utils'
 import { getRestaurantSettings, updateRestaurantSettings } from '@/lib/firestore'
+import { auth } from '@/lib/firebase'
 import type { OrderStatus, OrderType } from '@/types'
 
 interface OrderItem {
@@ -96,7 +97,10 @@ export default function OrdersPage() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch('/api/orders')
+      const idToken = await auth.currentUser?.getIdToken()
+      const res = await fetch('/api/orders', {
+        headers: idToken ? { Authorization: `Bearer ${idToken}` } : {},
+      })
       if (!res.ok) throw new Error()
       const data = await res.json()
       setOrders(data)
@@ -116,9 +120,13 @@ export default function OrdersPage() {
   async function updateStatus(id: string, status: OrderStatus) {
     setUpdating(id)
     try {
+      const idToken = await auth.currentUser?.getIdToken()
       const res = await fetch(`/api/orders/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+        },
         body: JSON.stringify({ status }),
       })
       if (!res.ok) throw new Error()
