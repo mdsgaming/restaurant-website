@@ -40,13 +40,22 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   CANCELLED: 'bg-red-100 text-red-700 border-red-200',
 }
 
-const FILTERS: Array<{ label: string; value: OrderStatus | 'ALL' }> = [
+type FilterValue = OrderStatus | 'ALL' | 'PAST'
+
+const FILTERS: Array<{ label: string; value: FilterValue }> = [
   { label: 'All', value: 'ALL' },
   { label: 'Pending', value: 'PENDING' },
   { label: 'Preparing', value: 'IN_PROGRESS' },
   { label: 'Ready', value: 'COMPLETED' },
   { label: 'Cancelled', value: 'CANCELLED' },
+  { label: 'Past', value: 'PAST' },
 ]
+
+const PAST_CUTOFF_MS = 48 * 60 * 60 * 1000
+
+function isPastOrder(order: Order): boolean {
+  return Date.now() - new Date(order.createdAt).getTime() > PAST_CUTOFF_MS
+}
 
 function timeAgo(dateStr: string): string {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
@@ -54,13 +63,15 @@ function timeAgo(dateStr: string): string {
   const minutes = Math.floor(seconds / 60)
   if (minutes < 60) return `${minutes}m ago`
   const hours = Math.floor(minutes / 60)
-  return `${hours}h ago`
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  return `${days}d ago`
 }
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<OrderStatus | 'ALL'>('ALL')
+  const [filter, setFilter] = useState<FilterValue>('ALL')
   const [updating, setUpdating] = useState<string | null>(null)
   const [orderingEnabled, setOrderingEnabled] = useState(true)
   const [togglingOrdering, setTogglingOrdering] = useState(false)
@@ -120,8 +131,15 @@ export default function OrdersPage() {
     }
   }
 
-  const filtered = filter === 'ALL' ? orders : orders.filter(o => o.status === filter)
-  const pendingCount = orders.filter(o => o.status === 'PENDING').length
+  const recentOrders = orders.filter(o => !isPastOrder(o))
+  const pastOrders = orders.filter(isPastOrder)
+
+  const filtered =
+    filter === 'PAST' ? pastOrders :
+    filter === 'ALL' ? recentOrders :
+    recentOrders.filter(o => o.status === filter)
+
+  const pendingCount = recentOrders.filter(o => o.status === 'PENDING').length
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -188,9 +206,20 @@ export default function OrdersPage() {
                 {pendingCount}
               </span>
             )}
+            {f.value === 'PAST' && pastOrders.length > 0 && (
+              <span className="ml-1.5 bg-charcoal/15 text-charcoal text-xs font-bold px-1.5 rounded-full">
+                {pastOrders.length}
+              </span>
+            )}
           </button>
         ))}
       </div>
+
+      {filter === 'PAST' && (
+        <p className="text-xs text-charcoal/40 -mt-2">
+          Orders placed more than 48 hours ago move here automatically.
+        </p>
+      )}
 
       {/* Orders list */}
       {loading ? (
