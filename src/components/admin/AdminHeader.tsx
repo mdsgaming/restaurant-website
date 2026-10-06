@@ -20,6 +20,7 @@ import {
   ExternalLink,
   ShoppingBag,
   Briefcase,
+  ChefHat,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -29,6 +30,7 @@ import toast from 'react-hot-toast'
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Orders', href: '/admin/orders', icon: ShoppingBag, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
+  { label: 'Catering', href: '/admin/catering', icon: ChefHat, roles: ['DEVELOPER', 'ADMIN'] },
   { label: 'Menu', href: '/admin/menu', icon: MenuIcon, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Gallery', href: '/admin/gallery', icon: Image, roles: ['DEVELOPER', 'ADMIN', 'ASSISTANT'] },
   { label: 'Approvals', href: '/admin/approvals', icon: ClipboardCheck, roles: ['DEVELOPER', 'ADMIN'] },

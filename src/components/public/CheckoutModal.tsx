@@ -6,7 +6,6 @@ import { X, CheckCircle, Bell } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { formatPrice } from '@/lib/utils'
 import { requestPushToken, canUsePush } from '@/lib/pushNotifications'
-import type { OrderType } from '@/types'
 
 interface Props {
   onClose: () => void
@@ -16,7 +15,6 @@ export function CheckoutModal({ onClose }: Props) {
   const { items, total, clearCart } = useCart()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
-  const [orderType, setOrderType] = useState<OrderType>('TAKEOUT')
   const [notes, setNotes] = useState('')
   const [notifyMe, setNotifyMe] = useState(true)
   const [pushAvailable, setPushAvailable] = useState(false)
@@ -44,7 +42,7 @@ export function CheckoutModal({ onClose }: Props) {
         body: JSON.stringify({
           customerName: name,
           customerPhone: phone,
-          orderType,
+          orderType: 'TAKEOUT',
           notes,
           total,
           notificationToken,
@@ -119,25 +117,9 @@ export function CheckoutModal({ onClose }: Props) {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-cream/60 mb-2">Order Type</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {(['TAKEOUT', 'DINE_IN'] as OrderType[]).map(type => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setOrderType(type)}
-                      className={`py-2.5 text-sm font-medium rounded-sm border transition-colors ${
-                        orderType === type
-                          ? 'bg-gold text-charcoal border-gold'
-                          : 'border-cream/20 text-cream/60 hover:border-cream/40 hover:text-cream'
-                      }`}
-                    >
-                      {type === 'TAKEOUT' ? 'Takeout' : 'Dine-in'}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <p className="text-xs text-cream/50 bg-white/5 border border-cream/10 rounded-sm px-3 py-2.5">
+                All online orders are for <span className="text-cream/80 font-medium">pickup</span>. We'll have it ready for you at the restaurant.
+              </p>
 
               <div>
                 <label className="block text-xs font-medium text-cream/60 mb-1.5">Notes <span className="text-cream/30">(optional)</span></label>

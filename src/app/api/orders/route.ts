@@ -23,8 +23,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Name is too long' }, { status: 400 })
     }
 
-    if (!['DINE_IN', 'TAKEOUT'].includes(orderType)) {
-      return NextResponse.json({ error: 'Invalid order type' }, { status: 400 })
+    // Online orders are pickup only. Dine-in is no longer offered online.
+    if (orderType !== 'TAKEOUT') {
+      return NextResponse.json({ error: 'Online orders are for pickup only' }, { status: 400 })
     }
 
     if (items.length > MAX_ITEMS) {
